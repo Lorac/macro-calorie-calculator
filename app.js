@@ -80,9 +80,20 @@ function render() {
   renderLocks();
 }
 
+let stateSaveTimer = 0;
+function saveStateSoon() {
+  clearTimeout(stateSaveTimer);
+  stateSaveTimer = setTimeout(() => save(STATE_KEY, state), 200);
+}
+// Persist the latest state if the page is hidden/closed before the debounce fires.
+addEventListener('pagehide', () => { clearTimeout(stateSaveTimer); save(STATE_KEY, state); });
+addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') { clearTimeout(stateSaveTimer); save(STATE_KEY, state); }
+});
+
 function changeControl(control, value) {
   state = resolve(state, pins, control, value);
-  save(STATE_KEY, state);
+  saveStateSoon();
   render();
 }
 

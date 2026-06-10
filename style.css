@@ -132,7 +132,7 @@ input[type="range"]:disabled { cursor: not-allowed; }
   overflow: hidden;
   background: var(--panel);
 }
-.bar-seg { height: 100%; transition: width 0.08s linear; }
+.bar-seg { height: 100%; }
 .bar-protein { background: var(--protein); }
 .bar-carb { background: var(--carb); }
 .bar-fat { background: var(--fat); }
