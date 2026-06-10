@@ -6,12 +6,10 @@ export const DEFAULT_STATE = { protein_g: 150, carb_g: 200, fat_g: 60 };
 
 const MACRO_KEYS = ['protein', 'carb', 'fat'];
 
-// Number of binding constraints implied by the pins.
+// Number of binding constraints implied by the pins (pins has exactly the four
+// boolean keys protein/carb/fat/calories, so counting the true ones is enough).
 export function constraintCount(pins) {
-  let n = 0;
-  for (const m of MACRO_KEYS) if (pins[m]) n++;
-  if (pins.calories) n++;
-  return n;
+  return Object.values(pins).filter(Boolean).length;
 }
 
 // Whether `control`'s lock can be toggled: turning ON needs constraintCount <= 2;
@@ -68,12 +66,16 @@ function macroCal(state, m) {
   return ENERGY[m] * sanitizeGrams(state[gk(m)]);
 }
 
-function resolveMacro(state, pins, M, value) {
-  const out = {
-    protein_g: sanitizeGrams(state.protein_g),
-    carb_g: sanitizeGrams(state.carb_g),
-    fat_g: sanitizeGrams(state.fat_g),
+function sanitizeState(s) {
+  return {
+    protein_g: sanitizeGrams(s.protein_g),
+    carb_g: sanitizeGrams(s.carb_g),
+    fat_g: sanitizeGrams(s.fat_g),
   };
+}
+
+function resolveMacro(state, pins, M, value) {
+  const out = sanitizeState(state);
   const newVal = sanitizeGrams(value);
 
   if (!pins.calories) {
@@ -113,11 +115,7 @@ function resolveMacro(state, pins, M, value) {
 }
 
 function resolveCalories(state, pins, value) {
-  const out = {
-    protein_g: sanitizeGrams(state.protein_g),
-    carb_g: sanitizeGrams(state.carb_g),
-    fat_g: sanitizeGrams(state.fat_g),
-  };
+  const out = sanitizeState(state);
   const T = sanitizeGrams(value);
   const unpinned = MACRO_KEYS.filter((m) => !pins[m]);
   if (unpinned.length === 0) return gramState(out);
