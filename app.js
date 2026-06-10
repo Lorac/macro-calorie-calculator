@@ -68,13 +68,19 @@ function render() {
   const { calories, kcal, percent } = calc(state);
   for (const m of MACROS) {
     const grams = state[`${m}_g`];
-    el(`${m}-slider`).value = Math.min(grams, MAX[m]);
+    const slider = el(`${m}-slider`);
+    const capped = Math.min(grams, MAX[m]);
+    slider.value = capped;
+    slider.style.setProperty('--val', (capped / MAX[m]) * 100); // fills the coloured track
     el(`${m}-grams`).value = Math.round(grams);
     el(`${m}-kcal`).textContent = kcalFmt.format(kcal[m]);
     el(`${m}-percent`).textContent = percent[m].toFixed(1);
     el(`bar-${m}`).style.width = `${percent[m]}%`;
   }
-  el('calories-slider').value = Math.min(calories, MAX.calories);
+  const calSlider = el('calories-slider');
+  const cappedCal = Math.min(calories, MAX.calories);
+  calSlider.value = cappedCal;
+  calSlider.style.setProperty('--val', (cappedCal / MAX.calories) * 100);
   el('calories').value = Math.round(calories);
   el('total-kcal').textContent = kcalFmt.format(calories);
   renderLocks();

@@ -15,7 +15,7 @@
 
     <section class="controls">
       <!-- Protein -->
-      <div class="row">
+      <div class="row row--protein">
         <button class="lock" id="protein-lock" type="button" aria-pressed="false" aria-label="Lock protein">🔓</button>
         <label for="protein-grams">Protein</label>
         <input type="range" id="protein-slider" min="0" max="900" step="1" aria-label="Protein grams slider" />
@@ -25,7 +25,7 @@
       </div>
 
       <!-- Carbs -->
-      <div class="row">
+      <div class="row row--carb">
         <button class="lock" id="carb-lock" type="button" aria-pressed="false" aria-label="Lock carbs">🔓</button>
         <label for="carb-grams">Carbs</label>
         <input type="range" id="carb-slider" min="0" max="1000" step="1" aria-label="Carbs grams slider" />
@@ -35,7 +35,7 @@
       </div>
 
       <!-- Fat -->
-      <div class="row">
+      <div class="row row--fat">
         <button class="lock" id="fat-lock" type="button" aria-pressed="false" aria-label="Lock fat">🔓</button>
         <label for="fat-grams">Fat</label>
         <input type="range" id="fat-slider" min="0" max="500" step="1" aria-label="Fat grams slider" />
@@ -56,7 +56,7 @@
     </section>
 
     <section class="summary" aria-live="polite">
-      <div class="total-kcal"><span id="total-kcal">0</span> kcal</div>
+      <div class="total-kcal"><span id="total-kcal">0</span> <span class="total-unit">kcal</span></div>
       <div class="bar" role="img" aria-label="Macro percentage split">
         <div class="bar-seg bar-protein" id="bar-protein"></div>
         <div class="bar-seg bar-carb" id="bar-carb"></div>
