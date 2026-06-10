@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Macro ⇄ Calorie Calculator</title>
+  <meta name="description" content="Free, ad-free macro and calorie calculator." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <h1>Macro ⇄ Calorie Calculator</h1>
+    <p class="tagline">Drag a slider or type grams. Calories and the split update live.</p>
+
+    <section class="macros">
+      <!-- Protein -->
+      <div class="macro-row">
+        <label for="protein-grams">Protein</label>
+        <input type="range" id="protein-slider" min="0" max="900" step="1" aria-label="Protein grams slider" />
+        <input type="number" id="protein-grams" min="0" step="1" inputmode="numeric" />
+        <span class="unit">g</span>
+        <span class="readout"><span id="protein-kcal">0</span> kcal · <span id="protein-percent">0</span>%</span>
+      </div>
+
+      <!-- Carbs -->
+      <div class="macro-row">
+        <label for="carb-grams">Carbs</label>
+        <input type="range" id="carb-slider" min="0" max="1000" step="1" aria-label="Carbs grams slider" />
+        <input type="number" id="carb-grams" min="0" step="1" inputmode="numeric" />
+        <span class="unit">g</span>
+        <span class="readout"><span id="carb-kcal">0</span> kcal · <span id="carb-percent">0</span>%</span>
+      </div>
+
+      <!-- Fat -->
+      <div class="macro-row">
+        <label for="fat-grams">Fat</label>
+        <input type="range" id="fat-slider" min="0" max="500" step="1" aria-label="Fat grams slider" />
+        <input type="number" id="fat-grams" min="0" step="1" inputmode="numeric" />
+        <span class="unit">g</span>
+        <span class="readout"><span id="fat-kcal">0</span> kcal · <span id="fat-percent">0</span>%</span>
+      </div>
+    </section>
+
+    <section class="totals">
+      <label for="calories">Total calories</label>
+      <input type="number" id="calories" min="0" step="1" inputmode="numeric" />
+      <span class="hint">Editing this scales all macros to hit the target.</span>
+    </section>
+
+    <section class="summary" aria-live="polite">
+      <div class="total-kcal"><span id="total-kcal">0</span> kcal</div>
+      <div class="bar" role="img" aria-label="Macro percentage split">
+        <div class="bar-seg bar-protein" id="bar-protein"></div>
+        <div class="bar-seg bar-carb" id="bar-carb"></div>
+        <div class="bar-seg bar-fat" id="bar-fat"></div>
+      </div>
+      <div class="bar-legend">
+        <span class="key key-protein">Protein</span>
+        <span class="key key-carb">Carbs</span>
+        <span class="key key-fat">Fat</span>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
