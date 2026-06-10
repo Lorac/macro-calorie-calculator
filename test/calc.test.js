@@ -53,9 +53,12 @@ test('scaleToCalories scales macros proportionally, preserving the split', () =>
 });
 
 test('scaleToCalories uses an even energy split when current calories are 0', () => {
-  // target 3600 -> 1200 kcal each -> 300g protein, 300g carb, 133g fat (rounded)
+  // target 3600 -> 1200 kcal each macro
   const scaled = scaleToCalories({ protein_g: 0, carb_g: 0, fat_g: 0 }, 3600);
-  assert.deepEqual(scaled, { protein_g: 300, carb_g: 300, fat_g: 133 });
+  assert.ok(approx(calc(scaled).calories, 3600));
+  assert.ok(approx(4 * scaled.protein_g, 1200));
+  assert.ok(approx(4 * scaled.carb_g, 1200));
+  assert.ok(approx(9 * scaled.fat_g, 1200));
 });
 
 test('scaleToCalories with target 0 zeroes all macros', () => {
@@ -86,6 +89,7 @@ test('canPin allows turning on only while constraints stay <= 2, unpin always ok
 });
 
 const NONE = { protein: false, carb: false, fat: false, calories: false };
+const approx = (a, b, tol = 1e-9) => Math.abs(a - b) < tol;
 
 test('resolve: macro change with calories unpinned just sets that macro', () => {
   const r = resolve({ protein_g: 150, carb_g: 200, fat_g: 60 }, NONE, 'protein', 100);
@@ -95,7 +99,20 @@ test('resolve: macro change with calories unpinned just sets that macro', () => 
 test('resolve: macro change with calories pinned compensates others proportionally', () => {
   const pins = { protein: false, carb: false, fat: false, calories: true };
   const r = resolve({ protein_g: 100, carb_g: 200, fat_g: 100 }, pins, 'protein', 200);
-  assert.deepEqual(r, { protein_g: 200, carb_g: 153, fat_g: 76 });
+  assert.equal(r.protein_g, 200); // the dragged macro lands exactly
+  assert.ok(approx(calc(r).calories, 2100)); // total calories held
+  assert.ok(approx(r.carb_g / r.fat_g, 2)); // original carb:fat = 200:100 preserved
+});
+
+test('resolve: calorie scaling is deterministic regardless of drag path', () => {
+  const start = { protein_g: 150, carb_g: 200, fat_g: 60 };
+  const direct = resolve(start, NONE, 'calories', 12000);
+  let stepped = start;
+  for (const t of [3000, 6000, 9000, 12000]) stepped = resolve(stepped, NONE, 'calories', t);
+  assert.ok(approx(direct.protein_g, stepped.protein_g, 1e-6));
+  assert.ok(approx(direct.carb_g, stepped.carb_g, 1e-6));
+  assert.ok(approx(direct.fat_g, stepped.fat_g, 1e-6));
+  assert.ok(approx(calc(direct).calories, 12000, 1e-6)); // hits the target exactly
 });
 
 test('resolve: calories + one macro pinned is a deterministic inverse', () => {
@@ -113,7 +130,9 @@ test('resolve: macro pushed past the calorie budget clamps, others go to 0', () 
 test('resolve: calorie change scales only unpinned macros, pinned macro stays', () => {
   const pins = { protein: true, carb: false, fat: false, calories: false };
   const r = resolve({ protein_g: 100, carb_g: 200, fat_g: 100 }, pins, 'calories', 2400);
-  assert.deepEqual(r, { protein_g: 100, carb_g: 235, fat_g: 118 });
+  assert.equal(r.protein_g, 100); // pinned macro untouched
+  assert.ok(approx(calc(r).calories, 2400)); // hits the target exactly
+  assert.ok(approx(r.carb_g / r.fat_g, 2)); // unpinned ratio preserved
 });
 
 test('resolve: calorie target below the pinned floor zeroes unpinned macros', () => {

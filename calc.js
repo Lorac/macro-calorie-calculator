@@ -1,7 +1,7 @@
 // Pure, framework-free macro/calorie math. Importable in browser and Node.
 
 export const ENERGY = { protein: 4, carb: 4, fat: 9 }; // kcal per gram
-export const MAX = { protein: 900, carb: 1000, fat: 500, calories: 12000 }; // slider maxes
+export const MAX = { protein: 900, carb: 1000, fat: 500, calories: 12_000 }; // slider maxes
 export const DEFAULT_STATE = { protein_g: 150, carb_g: 200, fat_g: 60 };
 
 const MACRO_KEYS = ['protein', 'carb', 'fat'];
@@ -57,12 +57,11 @@ function gk(m) {
   return `${m}_g`;
 }
 
-function roundState(s) {
-  return {
-    protein_g: Math.round(s.protein_g),
-    carb_g: Math.round(s.carb_g),
-    fat_g: Math.round(s.fat_g),
-  };
+// Grams are kept as an EXACT (unrounded) source of truth. Rounding the source
+// of truth makes chained scaling path-dependent (non-deterministic) and stops
+// calc(state) from hitting a dragged calorie target. The UI rounds for display.
+function gramState(s) {
+  return { protein_g: s.protein_g, carb_g: s.carb_g, fat_g: s.fat_g };
 }
 
 function macroCal(state, m) {
@@ -79,12 +78,12 @@ function resolveMacro(state, pins, M, value) {
 
   if (!pins.calories) {
     out[gk(M)] = newVal;
-    return roundState(out);
+    return gramState(out);
   }
 
   const K = calc(state).calories;
   const others = MACRO_KEYS.filter((m) => m !== M && !pins[m]);
-  if (others.length === 0) return roundState(out); // infeasible; leave as-is
+  if (others.length === 0) return gramState(out); // infeasible; leave as-is
 
   const fixedCal = MACRO_KEYS.filter((m) => m !== M && pins[m]).reduce(
     (s, m) => s + macroCal(state, m),
@@ -98,7 +97,7 @@ function resolveMacro(state, pins, M, value) {
     mVal = Math.max(0, (K - fixedCal) / ENERGY[M]);
     out[gk(M)] = mVal;
     for (const m of others) out[gk(m)] = 0;
-    return roundState(out);
+    return gramState(out);
   }
 
   out[gk(M)] = mVal;
@@ -110,7 +109,7 @@ function resolveMacro(state, pins, M, value) {
     const factor = targetOthersCal / currentOthersCal;
     for (const m of others) out[gk(m)] = sanitizeGrams(state[gk(m)]) * factor;
   }
-  return roundState(out);
+  return gramState(out);
 }
 
 function resolveCalories(state, pins, value) {
@@ -121,7 +120,7 @@ function resolveCalories(state, pins, value) {
   };
   const T = sanitizeGrams(value);
   const unpinned = MACRO_KEYS.filter((m) => !pins[m]);
-  if (unpinned.length === 0) return roundState(out);
+  if (unpinned.length === 0) return gramState(out);
 
   const fixedCal = MACRO_KEYS.filter((m) => pins[m]).reduce(
     (s, m) => s + macroCal(state, m),
@@ -131,7 +130,7 @@ function resolveCalories(state, pins, value) {
 
   if (targetUnpinnedCal <= 0) {
     for (const m of unpinned) out[gk(m)] = 0;
-    return roundState(out);
+    return gramState(out);
   }
 
   const currentUnpinnedCal = unpinned.reduce((s, m) => s + macroCal(state, m), 0);
@@ -142,7 +141,7 @@ function resolveCalories(state, pins, value) {
     const factor = targetUnpinnedCal / currentUnpinnedCal;
     for (const m of unpinned) out[gk(m)] = sanitizeGrams(state[gk(m)]) * factor;
   }
-  return roundState(out);
+  return gramState(out);
 }
 
 // Resolve a single user change into a new valid grams state, honoring pins.
