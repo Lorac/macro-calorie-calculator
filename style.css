@@ -1,12 +1,13 @@
 :root {
-  --bg: #0f1115;
-  --panel: #1a1d24;
-  --text: #e7e9ee;
-  --muted: #9aa1ad;
-  --protein: #4f9dff;
-  --carb: #ffce54;
-  --fat: #ff6b6b;
-  --accent: #4f9dff;
+  --bg: #07090d;
+  --panel: #1e2330;
+  --border: #38404f;
+  --text: #f3f5f9;
+  --muted: #b4bcca;
+  --protein: #5aa9ff;
+  --carb: #ffd24d;
+  --fat: #ff7b7b;
+  --accent: #5aa9ff;
 }
 
 * { box-sizing: border-box; }
@@ -36,13 +37,13 @@ h1 { font-size: 1.4rem; margin: 0 0 0.25rem; }
   align-items: center;
   gap: 0.75rem;
   padding: 0.6rem 0;
-  border-bottom: 1px solid #2a2e37;
+  border-bottom: 1px solid var(--border);
 }
 
 .row label { font-weight: 600; }
 .row .unit { color: var(--muted); }
 .row .readout { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
-.row-calories { margin-top: 0.5rem; border-top: 1px solid #2a2e37; }
+.row-calories { margin-top: 0.5rem; border-top: 1px solid var(--border); }
 .row-calories .readout { font-size: 0.8rem; }
 
 .lock {
@@ -63,7 +64,7 @@ input:disabled { opacity: 0.45; cursor: not-allowed; }
 
 input[type="number"] {
   background: var(--panel);
-  border: 1px solid #2a2e37;
+  border: 1px solid var(--border);
   color: var(--text);
   border-radius: 6px;
   padding: 0.4rem 0.5rem;
