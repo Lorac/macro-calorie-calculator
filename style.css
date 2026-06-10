@@ -181,6 +181,13 @@ input[type="range"]:disabled { cursor: not-allowed; }
   input[type="number"] {
     min-height: 44px;
     font-size: 1rem; /* >=16px: prevents iOS zoom-on-focus */
+    -moz-appearance: textfield;
+    appearance: textfield; /* drop spinners — tiny/awkward on touch; use slider or type */
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
   input[type="range"] { height: 32px; } /* tall hit area */
   input[type="range"]::-webkit-slider-thumb { width: 28px; height: 28px; margin-top: -11px; }
