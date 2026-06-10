@@ -149,19 +149,21 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--muted); }
 .key-fat::before { background: var(--fat); }
 
 @media (max-width: 520px) {
+  body { padding: 1rem; }
   .row {
-    grid-template-columns: 2rem 1fr auto;
+    grid-template-columns: 44px 1fr auto;
     grid-template-areas:
       "lock label readout"
       "slider slider slider"
       "number number unit";
+    gap: 0.5rem 0.75rem;
   }
   .row .lock { grid-area: lock; }
   .row label { grid-area: label; }
   .row .readout { grid-area: readout; }
   .row input[type="range"] { grid-area: slider; }
   .row input[type="number"] { grid-area: number; }
-  .row .unit { grid-area: unit; }
+  .row .unit { grid-area: unit; align-self: center; }
 }
 
 /* Phones / touch: enlarge tap targets and slider thumb */
