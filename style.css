@@ -105,9 +105,10 @@ input[type="range"]::-moz-range-thumb {
   background: var(--accent);
   border: none;
 }
+input[type="range"]:focus-visible { outline: none; }
+input[type="range"]:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--text); outline-offset: 2px; }
+input[type="range"]:focus-visible::-moz-range-thumb { outline: 2px solid var(--text); outline-offset: 2px; }
 input[type="range"]:disabled { cursor: not-allowed; }
-input[type="range"]:disabled::-webkit-slider-thumb { background: var(--muted); }
-input[type="range"]:disabled::-moz-range-thumb { background: var(--muted); }
 
 .totals {
   display: flex;
