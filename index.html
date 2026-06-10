@@ -5,69 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Macro ⇄ Calorie Calculator</title>
   <meta name="description" content="Free, ad-free macro and calorie calculator." />
+  <meta name="theme-color" content="#f3ecd8" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="app">
-    <h1>Macro ⇄ Calorie Calculator</h1>
-    <p class="tagline">Drag a slider or type. Lock 🔒 any rows you want held fixed.</p>
+    <article class="label">
+      <header class="masthead">
+        <h1>Macro <span class="swap" aria-hidden="true">⇄</span> Calorie<br />Calculator</h1>
+        <p class="tagline">Drag a slider or type. Lock <span aria-hidden="true">🔒</span> any rows you want held fixed.</p>
+      </header>
 
-    <section class="controls">
+      <p class="per">Amount per day</p>
+      <div class="hero" aria-live="polite">
+        <span class="hero__name">Calories</span>
+        <span class="hero__value" id="total-kcal">0</span>
+      </div>
+
+      <!-- Calories control -->
+      <div class="row row-calories">
+        <button class="lock" id="calories-lock" type="button" aria-pressed="false" aria-label="Lock calories">🔓</button>
+        <label for="calories" class="row__name">Adjust</label>
+        <input type="number" id="calories" min="0" step="1" inputmode="numeric" />
+        <span class="unit">kcal</span>
+        <span class="readout">scales unpinned</span>
+        <input type="range" id="calories-slider" min="0" max="12000" step="1" aria-label="Total calories slider" />
+      </div>
+
+      <p class="col-head"><span>Macronutrient</span><span>% of cal</span></p>
+
       <!-- Protein -->
       <div class="row row--protein">
         <button class="lock" id="protein-lock" type="button" aria-pressed="false" aria-label="Lock protein">🔓</button>
-        <label for="protein-grams">Protein</label>
-        <input type="range" id="protein-slider" min="0" max="900" step="1" aria-label="Protein grams slider" />
+        <label for="protein-grams" class="row__name">Protein</label>
         <input type="number" id="protein-grams" min="0" step="1" inputmode="numeric" />
         <span class="unit">g</span>
-        <span class="readout"><span id="protein-kcal">0</span> kcal · <span id="protein-percent">0</span>%</span>
+        <span class="readout"><span id="protein-percent">0</span><span class="readout__pct">%</span><span class="readout__kcal"><span id="protein-kcal">0</span> kcal</span></span>
+        <input type="range" id="protein-slider" min="0" max="900" step="1" aria-label="Protein grams slider" />
       </div>
 
       <!-- Carbs -->
       <div class="row row--carb">
         <button class="lock" id="carb-lock" type="button" aria-pressed="false" aria-label="Lock carbs">🔓</button>
-        <label for="carb-grams">Carbs</label>
-        <input type="range" id="carb-slider" min="0" max="1000" step="1" aria-label="Carbs grams slider" />
+        <label for="carb-grams" class="row__name">Carbs</label>
         <input type="number" id="carb-grams" min="0" step="1" inputmode="numeric" />
         <span class="unit">g</span>
-        <span class="readout"><span id="carb-kcal">0</span> kcal · <span id="carb-percent">0</span>%</span>
+        <span class="readout"><span id="carb-percent">0</span><span class="readout__pct">%</span><span class="readout__kcal"><span id="carb-kcal">0</span> kcal</span></span>
+        <input type="range" id="carb-slider" min="0" max="1000" step="1" aria-label="Carbs grams slider" />
       </div>
 
       <!-- Fat -->
       <div class="row row--fat">
         <button class="lock" id="fat-lock" type="button" aria-pressed="false" aria-label="Lock fat">🔓</button>
-        <label for="fat-grams">Fat</label>
-        <input type="range" id="fat-slider" min="0" max="500" step="1" aria-label="Fat grams slider" />
+        <label for="fat-grams" class="row__name">Fat</label>
         <input type="number" id="fat-grams" min="0" step="1" inputmode="numeric" />
         <span class="unit">g</span>
-        <span class="readout"><span id="fat-kcal">0</span> kcal · <span id="fat-percent">0</span>%</span>
+        <span class="readout"><span id="fat-percent">0</span><span class="readout__pct">%</span><span class="readout__kcal"><span id="fat-kcal">0</span> kcal</span></span>
+        <input type="range" id="fat-slider" min="0" max="500" step="1" aria-label="Fat grams slider" />
       </div>
 
-      <!-- Calories -->
-      <div class="row row-calories">
-        <button class="lock" id="calories-lock" type="button" aria-pressed="false" aria-label="Lock calories">🔓</button>
-        <label for="calories">Calories</label>
-        <input type="range" id="calories-slider" min="0" max="12000" step="1" aria-label="Total calories slider" />
-        <input type="number" id="calories" min="0" step="1" inputmode="numeric" />
-        <span class="unit">kcal</span>
-        <span class="readout">scales unpinned</span>
-      </div>
-    </section>
-
-    <section class="summary" aria-live="polite">
-      <div class="total-kcal"><span id="total-kcal">0</span> <span class="total-unit">kcal</span></div>
-      <div class="bar" role="img" aria-label="Macro percentage split">
-        <div class="bar-seg bar-protein" id="bar-protein"></div>
-        <div class="bar-seg bar-carb" id="bar-carb"></div>
-        <div class="bar-seg bar-fat" id="bar-fat"></div>
-      </div>
-      <div class="bar-legend">
-        <span class="key key-protein">Protein</span>
-        <span class="key key-carb">Carbs</span>
-        <span class="key key-fat">Fat</span>
-      </div>
-    </section>
+      <section class="split">
+        <p class="split__head">Calorie split</p>
+        <div class="bar" role="img" aria-label="Macro percentage split">
+          <div class="bar-seg bar-protein" id="bar-protein"></div>
+          <div class="bar-seg bar-carb" id="bar-carb"></div>
+          <div class="bar-seg bar-fat" id="bar-fat"></div>
+        </div>
+        <div class="bar-legend">
+          <span class="key key-protein">Protein</span>
+          <span class="key key-carb">Carbs</span>
+          <span class="key key-fat">Fat</span>
+        </div>
+      </section>
+    </article>
   </main>
 
   <script type="module" src="app.js"></script>

@@ -1,17 +1,11 @@
 :root {
-  --bg: #06080c;
-  --panel: #121724;
-  --panel-2: #1b2130;
-  --track: #232b3b;
-  --border: #2b3342;
-  --border-strong: #3a4357;
-  --text: #f4f6fa;
-  --muted: #9aa4b4;
-  --protein: #5aa9ff;
-  --carb: #ffd24d;
-  --fat: #ff7b7b;
-  --accent: #5aa9ff;
-  --radius: 16px;
+  --paper: #f4edd8;
+  --paper-2: #e9e0c6;
+  --ink: #181308;
+  --protein: #2f53c8; /* riso blue */
+  --carb: #e0a51f;    /* riso gold */
+  --fat: #d83621;     /* riso vermillion */
+  --accent: #d83621;
 }
 
 * { box-sizing: border-box; }
@@ -19,133 +13,193 @@
 body {
   margin: 0;
   min-height: 100vh;
-  color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background:
-    radial-gradient(900px 520px at 12% -12%, rgba(90, 169, 255, 0.12), transparent 60%),
-    radial-gradient(820px 520px at 100% 4%, rgba(255, 123, 123, 0.09), transparent 55%),
-    radial-gradient(700px 600px at 50% 120%, rgba(255, 210, 77, 0.06), transparent 60%),
-    var(--bg);
+  background: var(--paper-2);
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 2.25rem 1.25rem;
+  padding: 2.5rem 1.25rem;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
-.app {
-  width: 100%;
-  max-width: 560px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 28%),
-    var(--panel);
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) + 6px);
-  padding: 1.85rem 1.65rem 2rem;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 26px 64px -28px rgba(0, 0, 0, 0.75),
-    0 10px 28px -18px rgba(0, 0, 0, 0.6);
-  animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+/* Paper grain */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-@keyframes rise {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: none; }
+.app { width: 100%; max-width: 430px; }
+
+.label {
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  padding: 1.4rem 1.3rem 1.5rem;
+  box-shadow: 9px 9px 0 var(--ink);
 }
 
+/* ---- Masthead ---- */
+.masthead {
+  border-bottom: 8px solid var(--ink);
+  padding-bottom: 0.7rem;
+  margin-bottom: 0.55rem;
+}
 h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  margin: 0 0 0.3rem;
+  margin: 0;
+  font-size: clamp(1.9rem, 8vw, 2.6rem);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
 }
+.swap { font-weight: 400; }
 .tagline {
-  color: var(--muted);
-  margin: 0 0 1.6rem;
-  font-size: 0.92rem;
-  line-height: 1.5;
+  margin: 0.55rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.35;
 }
 
+/* ---- "Amount per day" + hero calories ---- */
+.per {
+  margin: 0.15rem 0 0.1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 8px solid var(--ink);
+  padding-bottom: 0.1rem;
+}
+.hero__name {
+  font-size: clamp(1.4rem, 6vw, 2rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  padding-bottom: 0.55rem;
+}
+.hero__value {
+  font-size: clamp(3.3rem, 17vw, 5rem);
+  font-weight: 900;
+  line-height: 0.8;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Column header ---- */
+.col-head {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0.5rem 0 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  border-bottom: 1.5px solid var(--ink);
+}
+
+/* ---- Rows (line item + slider beneath) ---- */
 .row {
   display: grid;
-  grid-template-columns: 2rem 92px 1fr 80px auto 1fr;
+  grid-template-columns: 2.75rem 1fr auto auto minmax(3.4rem, auto);
+  grid-template-areas:
+    "lock name number unit pct"
+    "slider slider slider slider slider";
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.7rem 0;
-  border-bottom: 1px solid var(--border);
+  column-gap: 0.55rem;
+  row-gap: 0.5rem;
+  padding: 0.7rem 0 0.75rem;
+  border-top: 1.5px solid var(--ink);
 }
 .row--protein { --c: var(--protein); }
 .row--carb { --c: var(--carb); }
 .row--fat { --c: var(--fat); }
-.row-calories { --c: var(--accent); }
+.row-calories { --c: var(--ink); border-top: none; }
 
-.row label { font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; }
-.row--protein label::before,
-.row--carb label::before,
-.row--fat label::before {
-  content: "";
-  display: inline-block;
-  width: 0.55rem;
-  height: 0.55rem;
-  border-radius: 50%;
-  background: var(--c);
-  margin-right: 0.5rem;
-  vertical-align: middle;
-  box-shadow: 0 0 9px -1px var(--c);
+.row__name {
+  grid-area: name;
+  font-weight: 800;
+  font-size: 1.02rem;
+  letter-spacing: -0.01em;
 }
-.row .unit { color: var(--muted); font-size: 0.95rem; }
+.row .unit { grid-area: unit; font-weight: 700; font-size: 0.82rem; }
 .row .readout {
-  color: var(--muted);
+  grid-area: pct;
   text-align: right;
-  font-variant-numeric: tabular-nums;
-  font-size: 0.92rem;
-}
-.row-calories { margin-top: 0.6rem; border-top: 1px solid var(--border-strong); padding-top: 0.9rem; }
-.row-calories label { font-size: 1.02rem; }
-.row-calories .readout { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; }
-
-.lock {
-  background: none;
-  border: none;
-  cursor: pointer;
+  font-weight: 800;
   font-size: 1.1rem;
   line-height: 1;
-  padding: 0.25rem;
-  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.readout__pct { font-size: 0.62em; margin-left: 0.05em; }
+.readout__kcal {
+  display: block;
+  margin-top: 0.2rem;
+  font-weight: 500;
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+  opacity: 0.65;
+}
+.row-calories .readout {
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   opacity: 0.7;
-  transition: opacity 0.15s, background 0.15s, transform 0.1s;
 }
-.lock:hover { background: var(--panel-2); opacity: 1; }
-.lock:active { transform: scale(0.9); }
-.lock[aria-pressed="true"] {
-  opacity: 1;
-  background: color-mix(in srgb, var(--accent) 16%, transparent);
+
+/* ---- Lock buttons ---- */
+.lock {
+  grid-area: lock;
+  width: 2.4rem;
+  height: 2.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
 }
-.lock:disabled { opacity: 0.22; cursor: not-allowed; }
+.lock[aria-pressed="true"] { background: color-mix(in srgb, var(--c, var(--ink)) 38%, var(--paper)); }
+.lock:active { box-shadow: 2px 2px 0 var(--ink); }
+.lock:disabled { opacity: 0.3; cursor: not-allowed; }
 
 input:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* ---- Number inputs ---- */
 input[type="number"] {
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 10px;
-  padding: 0.5rem 0.55rem;
-  width: 100%;
-  font-size: 1rem;
+  grid-area: number;
+  width: 5.2rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  padding: 0.38rem 0.45rem;
+  font: inherit;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  transition: border-color 0.15s, box-shadow 0.15s;
 }
-input[type="number"]:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
-}
+input[type="number"]:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
 
-/* Sliders — track filled in the row's macro colour up to the current value */
+/* ---- Sliders (inked bar with a square thumb) ---- */
 input[type="range"] {
+  grid-area: slider;
   width: 100%;
   -webkit-appearance: none;
   appearance: none;
@@ -153,94 +207,70 @@ input[type="range"] {
   cursor: pointer;
 }
 input[type="range"]::-webkit-slider-runnable-track {
-  height: 6px;
-  border-radius: 99px;
+  height: 12px;
+  box-sizing: border-box;
+  border: 2px solid var(--ink);
   background: linear-gradient(
     to right,
-    var(--c, var(--accent)) calc(var(--val, 0) * 1%),
-    var(--track) calc(var(--val, 0) * 1%)
+    var(--c, var(--ink)) calc(var(--val, 0) * 1%),
+    transparent calc(var(--val, 0) * 1%)
   );
 }
 input[type="range"]::-moz-range-track {
-  height: 6px;
-  border-radius: 99px;
-  background: var(--track);
+  height: 12px;
+  box-sizing: border-box;
+  border: 2px solid var(--ink);
+  background: transparent;
 }
 input[type="range"]::-moz-range-progress {
-  height: 6px;
-  border-radius: 99px;
-  background: var(--c, var(--accent));
+  height: 12px;
+  background: var(--c, var(--ink));
 }
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
-  margin-top: -6px; /* center 18px thumb on 6px track */
-  border-radius: 50%;
-  background: #fff;
-  border: none;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.2);
-  transition: box-shadow 0.15s, transform 0.12s;
+  width: 14px;
+  height: 26px;
+  margin-top: -9px; /* center 26px thumb over the 12px track box */
+  border-radius: 0;
+  background: var(--ink);
+  border: 2px solid var(--paper);
 }
 input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #fff;
-  border: none;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+  width: 12px;
+  height: 24px;
+  border-radius: 0;
+  background: var(--ink);
+  border: 2px solid var(--paper);
 }
-input[type="range"]:active::-webkit-slider-thumb {
-  transform: scale(1.1);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.55), 0 0 0 7px color-mix(in srgb, var(--c, var(--accent)) 28%, transparent);
-}
+input[type="range"]:active::-webkit-slider-thumb { background: var(--c, var(--ink)); }
+input[type="range"]:active::-moz-range-thumb { background: var(--c, var(--ink)); }
 input[type="range"]:focus-visible { outline: none; }
-input[type="range"]:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.55), 0 0 0 4px color-mix(in srgb, var(--c, var(--accent)) 45%, transparent);
-}
-input[type="range"]:focus-visible::-moz-range-thumb {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.55), 0 0 0 4px color-mix(in srgb, var(--c, var(--accent)) 45%, transparent);
-}
+input[type="range"]:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--ink); outline-offset: 2px; }
+input[type="range"]:focus-visible::-moz-range-thumb { outline: 2px solid var(--ink); outline-offset: 2px; }
 input[type="range"]:disabled { cursor: not-allowed; }
 
-.summary { margin-top: 1.6rem; }
-.total-kcal {
-  font-size: 2.6rem;
+/* ---- Calorie split bar ---- */
+.split {
+  border-top: 8px solid var(--ink);
+  margin-top: 0.45rem;
+  padding-top: 0.75rem;
+}
+.split__head {
+  margin: 0 0 0.55rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: -0.03em;
-  margin-bottom: 0.85rem;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  background: linear-gradient(95deg, var(--protein), var(--carb) 55%, var(--fat));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
 }
-.total-unit {
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  color: var(--muted);
-  -webkit-text-fill-color: var(--muted);
-}
-
 .bar {
   display: flex;
-  gap: 2px;
-  height: 26px;
-  border-radius: 10px;
+  height: 30px;
+  border: 2.5px solid var(--ink);
   overflow: hidden;
-  background: var(--track);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
-.bar-seg { height: 100%; position: relative; }
-.bar-seg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0.14));
-}
+.bar-seg { height: 100%; }
+.bar-seg + .bar-seg { border-left: 2px solid var(--ink); }
 .bar-protein { background: var(--protein); }
 .bar-carb { background: var(--carb); }
 .bar-fat { background: var(--fat); }
@@ -248,71 +278,59 @@ input[type="range"]:disabled { cursor: not-allowed; }
 .bar-legend {
   display: flex;
   gap: 1.1rem;
-  margin-top: 0.7rem;
-  font-size: 0.85rem;
-  color: var(--muted);
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
 }
+.key { display: inline-flex; align-items: center; }
 .key::before {
   content: "";
   display: inline-block;
-  width: 0.7rem;
-  height: 0.7rem;
-  border-radius: 3px;
-  margin-right: 0.4rem;
-  vertical-align: middle;
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 1.5px solid var(--ink);
+  margin-right: 0.35rem;
 }
 .key-protein::before { background: var(--protein); }
 .key-carb::before { background: var(--carb); }
 .key-fat::before { background: var(--fat); }
 
-@media (max-width: 520px) {
-  body { padding: 1.25rem 0.9rem; }
-  .app { padding: 1.5rem 1.25rem 1.75rem; }
-  .row {
-    grid-template-columns: 44px 1fr auto;
-    grid-template-areas:
-      "lock label readout"
-      "slider slider slider"
-      "number number unit";
-    gap: 0.5rem 0.75rem;
-  }
-  .row .lock { grid-area: lock; }
-  .row label { grid-area: label; }
-  .row .readout { grid-area: readout; }
-  .row input[type="range"] { grid-area: slider; }
-  .row input[type="number"] { grid-area: number; }
-  .row .unit { grid-area: unit; align-self: center; }
-  .total-kcal { font-size: 2.3rem; }
+/* ---- One-shot "printed in" stagger ---- */
+@keyframes ink-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
 }
+.masthead, .per, .hero, .col-head, .row, .split {
+  animation: ink-in 0.45s both;
+}
+.masthead { animation-delay: 0.02s; }
+.per { animation-delay: 0.08s; }
+.hero { animation-delay: 0.12s; }
+.row-calories { animation-delay: 0.16s; }
+.col-head { animation-delay: 0.20s; }
+.row--protein { animation-delay: 0.24s; }
+.row--carb { animation-delay: 0.28s; }
+.row--fat { animation-delay: 0.32s; }
+.split { animation-delay: 0.36s; }
 
-/* Phones / touch: enlarge tap targets and slider thumb */
+/* ---- Touch / small screens ---- */
+@media (max-width: 520px) {
+  body { padding: 1.5rem 0.9rem; }
+  .label { padding: 1.2rem 1.05rem 1.35rem; box-shadow: 6px 6px 0 var(--ink); }
+}
 @media (max-width: 520px), (pointer: coarse) {
-  .lock {
-    min-width: 44px;
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    font-size: 1.3rem;
-  }
+  .lock { width: 44px; height: 44px; font-size: 1.25rem; }
   input[type="number"] {
     min-height: 44px;
     font-size: 1rem; /* >=16px: prevents iOS zoom-on-focus */
     -moz-appearance: textfield;
-    appearance: textfield; /* drop spinners — tiny/awkward on touch; use slider or type */
+    appearance: textfield; /* drop spinners — awkward on touch; use slider or type */
   }
   input[type="number"]::-webkit-outer-spin-button,
-  input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  input[type="range"] { height: 36px; } /* tall hit area */
-  input[type="range"]::-webkit-slider-thumb { width: 26px; height: 26px; margin-top: -10px; }
-  input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; }
-  .readout { font-size: 0.95rem; }
-  .row-calories .readout { font-size: 0.8rem; }
-  .bar-legend { font-size: 0.95rem; }
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="range"] { height: 40px; }
+  input[type="range"]::-webkit-slider-thumb { width: 18px; height: 32px; margin-top: -12px; }
+  input[type="range"]::-moz-range-thumb { width: 16px; height: 30px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
