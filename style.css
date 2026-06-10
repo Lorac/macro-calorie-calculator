@@ -30,18 +30,36 @@ body {
 h1 { font-size: 1.4rem; margin: 0 0 0.25rem; }
 .tagline { color: var(--muted); margin: 0 0 1.5rem; }
 
-.macro-row {
+.row {
   display: grid;
-  grid-template-columns: 70px 1fr 80px auto 1fr;
+  grid-template-columns: 2rem 70px 1fr 80px auto 1fr;
   align-items: center;
   gap: 0.75rem;
   padding: 0.6rem 0;
   border-bottom: 1px solid #2a2e37;
 }
 
-.macro-row label { font-weight: 600; }
-.macro-row .unit { color: var(--muted); }
-.macro-row .readout { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.row label { font-weight: 600; }
+.row .unit { color: var(--muted); }
+.row .readout { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.row-calories { margin-top: 0.5rem; border-top: 1px solid #2a2e37; }
+.row-calories .readout { font-size: 0.8rem; }
+
+.lock {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0.2rem;
+  border-radius: 6px;
+  opacity: 0.85;
+}
+.lock:hover { background: var(--panel); opacity: 1; }
+.lock[aria-pressed="true"] { opacity: 1; }
+.lock:disabled { opacity: 0.25; cursor: not-allowed; }
+
+input:disabled { opacity: 0.45; cursor: not-allowed; }
 
 input[type="number"] {
   background: var(--panel);
@@ -95,16 +113,17 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .key-fat::before { background: var(--fat); }
 
 @media (max-width: 520px) {
-  .macro-row {
-    grid-template-columns: 1fr auto;
+  .row {
+    grid-template-columns: 2rem 1fr auto;
     grid-template-areas:
-      "label readout"
-      "slider slider"
-      "number unit";
+      "lock label readout"
+      "slider slider slider"
+      "number number unit";
   }
-  .macro-row label { grid-area: label; }
-  .macro-row .readout { grid-area: readout; }
-  .macro-row input[type="range"] { grid-area: slider; }
-  .macro-row input[type="number"] { grid-area: number; }
-  .macro-row .unit { grid-area: unit; }
+  .row .lock { grid-area: lock; }
+  .row label { grid-area: label; }
+  .row .readout { grid-area: readout; }
+  .row input[type="range"] { grid-area: slider; }
+  .row input[type="number"] { grid-area: number; }
+  .row .unit { grid-area: unit; }
 }

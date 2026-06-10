@@ -10,11 +10,12 @@
 <body>
   <main class="app">
     <h1>Macro ⇄ Calorie Calculator</h1>
-    <p class="tagline">Drag a slider or type grams. Calories and the split update live.</p>
+    <p class="tagline">Drag a slider or type. Lock 🔒 any rows you want held fixed.</p>
 
-    <section class="macros">
+    <section class="controls">
       <!-- Protein -->
-      <div class="macro-row">
+      <div class="row">
+        <button class="lock" id="protein-lock" type="button" aria-pressed="false" aria-label="Lock protein">🔓</button>
         <label for="protein-grams">Protein</label>
         <input type="range" id="protein-slider" min="0" max="900" step="1" aria-label="Protein grams slider" />
         <input type="number" id="protein-grams" min="0" step="1" inputmode="numeric" />
@@ -23,7 +24,8 @@
       </div>
 
       <!-- Carbs -->
-      <div class="macro-row">
+      <div class="row">
+        <button class="lock" id="carb-lock" type="button" aria-pressed="false" aria-label="Lock carbs">🔓</button>
         <label for="carb-grams">Carbs</label>
         <input type="range" id="carb-slider" min="0" max="1000" step="1" aria-label="Carbs grams slider" />
         <input type="number" id="carb-grams" min="0" step="1" inputmode="numeric" />
@@ -32,19 +34,24 @@
       </div>
 
       <!-- Fat -->
-      <div class="macro-row">
+      <div class="row">
+        <button class="lock" id="fat-lock" type="button" aria-pressed="false" aria-label="Lock fat">🔓</button>
         <label for="fat-grams">Fat</label>
         <input type="range" id="fat-slider" min="0" max="500" step="1" aria-label="Fat grams slider" />
         <input type="number" id="fat-grams" min="0" step="1" inputmode="numeric" />
         <span class="unit">g</span>
         <span class="readout"><span id="fat-kcal">0</span> kcal · <span id="fat-percent">0</span>%</span>
       </div>
-    </section>
 
-    <section class="totals">
-      <label for="calories">Total calories</label>
-      <input type="number" id="calories" min="0" step="1" inputmode="numeric" />
-      <span class="hint">Editing this scales all macros to hit the target.</span>
+      <!-- Calories -->
+      <div class="row row-calories">
+        <button class="lock" id="calories-lock" type="button" aria-pressed="false" aria-label="Lock calories">🔓</button>
+        <label for="calories">Calories</label>
+        <input type="range" id="calories-slider" min="0" max="12000" step="1" aria-label="Total calories slider" />
+        <input type="number" id="calories" min="0" step="1" inputmode="numeric" />
+        <span class="unit">kcal</span>
+        <span class="readout">scales unpinned</span>
+      </div>
     </section>
 
     <section class="summary" aria-live="polite">
