@@ -7,6 +7,9 @@ import {
   DEFAULT_STATE,
   calc,
   scaleToCalories,
+  constraintCount,
+  canPin,
+  resolve,
 } from '../calc.js';
 
 test('sanitizeGrams coerces invalid input to 0 and passes valid numbers', () => {
@@ -20,7 +23,7 @@ test('sanitizeGrams coerces invalid input to 0 and passes valid numbers', () => 
 
 test('energy constants, slider ranges, and default state are correct', () => {
   assert.deepEqual(ENERGY, { protein: 4, carb: 4, fat: 9 });
-  assert.deepEqual(MAX, { protein: 900, carb: 1000, fat: 500 });
+  assert.deepEqual(MAX, { protein: 900, carb: 1000, fat: 500, calories: 12000 });
   assert.deepEqual(DEFAULT_STATE, { protein_g: 150, carb_g: 200, fat_g: 60 });
 });
 
@@ -63,4 +66,58 @@ test('scaleToCalories with target 0 zeroes all macros', () => {
 test('scaleToCalories sanitizes an invalid target to 0', () => {
   const scaled = scaleToCalories({ protein_g: 50, carb_g: 60, fat_g: 20 }, 'abc');
   assert.deepEqual(scaled, { protein_g: 0, carb_g: 0, fat_g: 0 });
+});
+
+test('constraintCount counts pinned macros plus calories', () => {
+  assert.equal(constraintCount({ protein: false, carb: false, fat: false, calories: false }), 0);
+  assert.equal(constraintCount({ protein: true, carb: false, fat: false, calories: true }), 2);
+  assert.equal(constraintCount({ protein: true, carb: true, fat: true, calories: false }), 3);
+});
+
+test('canPin allows turning on only while constraints stay <= 2, unpin always ok', () => {
+  const none = { protein: false, carb: false, fat: false, calories: false };
+  assert.equal(canPin(none, 'protein'), true);
+  const two = { protein: true, carb: false, fat: false, calories: true };
+  assert.equal(canPin(two, 'carb'), false); // would make 3
+  assert.equal(canPin(two, 'protein'), true); // already pinned -> can unpin
+  const twoMacros = { protein: true, carb: true, fat: false, calories: false };
+  assert.equal(canPin(twoMacros, 'calories'), false);
+  assert.equal(canPin(twoMacros, 'fat'), false);
+});
+
+const NONE = { protein: false, carb: false, fat: false, calories: false };
+
+test('resolve: macro change with calories unpinned just sets that macro', () => {
+  const r = resolve({ protein_g: 150, carb_g: 200, fat_g: 60 }, NONE, 'protein', 100);
+  assert.deepEqual(r, { protein_g: 100, carb_g: 200, fat_g: 60 });
+});
+
+test('resolve: macro change with calories pinned compensates others proportionally', () => {
+  const pins = { protein: false, carb: false, fat: false, calories: true };
+  const r = resolve({ protein_g: 100, carb_g: 200, fat_g: 100 }, pins, 'protein', 200);
+  assert.deepEqual(r, { protein_g: 200, carb_g: 153, fat_g: 76 });
+});
+
+test('resolve: calories + one macro pinned is a deterministic inverse', () => {
+  const pins = { protein: false, carb: false, fat: true, calories: true };
+  const r = resolve({ protein_g: 100, carb_g: 100, fat_g: 100 }, pins, 'protein', 150);
+  assert.deepEqual(r, { protein_g: 150, carb_g: 50, fat_g: 100 });
+});
+
+test('resolve: macro pushed past the calorie budget clamps, others go to 0', () => {
+  const pins = { protein: false, carb: false, fat: false, calories: true };
+  const r = resolve({ protein_g: 100, carb_g: 100, fat_g: 100 }, pins, 'protein', 9999);
+  assert.deepEqual(r, { protein_g: 425, carb_g: 0, fat_g: 0 });
+});
+
+test('resolve: calorie change scales only unpinned macros, pinned macro stays', () => {
+  const pins = { protein: true, carb: false, fat: false, calories: false };
+  const r = resolve({ protein_g: 100, carb_g: 200, fat_g: 100 }, pins, 'calories', 2400);
+  assert.deepEqual(r, { protein_g: 100, carb_g: 235, fat_g: 118 });
+});
+
+test('resolve: calorie target below the pinned floor zeroes unpinned macros', () => {
+  const pins = { protein: true, carb: false, fat: false, calories: false };
+  const r = resolve({ protein_g: 100, carb_g: 100, fat_g: 100 }, pins, 'calories', 300);
+  assert.deepEqual(r, { protein_g: 100, carb_g: 0, fat_g: 0 });
 });

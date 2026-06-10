@@ -1,8 +1,25 @@
 // Pure, framework-free macro/calorie math. Importable in browser and Node.
 
 export const ENERGY = { protein: 4, carb: 4, fat: 9 }; // kcal per gram
-export const MAX = { protein: 900, carb: 1000, fat: 500 }; // slider maxes (g)
+export const MAX = { protein: 900, carb: 1000, fat: 500, calories: 12000 }; // slider maxes
 export const DEFAULT_STATE = { protein_g: 150, carb_g: 200, fat_g: 60 };
+
+const MACRO_KEYS = ['protein', 'carb', 'fat'];
+
+// Number of binding constraints implied by the pins.
+export function constraintCount(pins) {
+  let n = 0;
+  for (const m of MACRO_KEYS) if (pins[m]) n++;
+  if (pins.calories) n++;
+  return n;
+}
+
+// Whether `control`'s lock can be toggled: turning ON needs constraintCount <= 2;
+// turning OFF (already pinned) is always allowed.
+export function canPin(pins, control) {
+  if (pins[control]) return true;
+  return constraintCount({ ...pins, [control]: true }) <= 2;
+}
 
 // Coerce any value to a non-negative finite number; invalid/negative -> 0.
 export function sanitizeGrams(value) {
@@ -36,29 +53,111 @@ export function calc(state) {
   };
 }
 
-// Return a NEW state scaled proportionally to hit targetCalories.
-// Grams are rounded to whole numbers (the app is grams-integer).
-// When current calories are 0, fall back to an even energy split.
-export function scaleToCalories(state, targetCalories) {
-  const target = sanitizeGrams(targetCalories);
-  if (target === 0) {
-    return { protein_g: 0, carb_g: 0, fat_g: 0 };
-  }
+function gk(m) {
+  return `${m}_g`;
+}
 
-  const current = calc(state).calories;
-  if (current === 0) {
-    const each = target / 3; // kcal per macro
-    return {
-      protein_g: Math.round(each / ENERGY.protein),
-      carb_g: Math.round(each / ENERGY.carb),
-      fat_g: Math.round(each / ENERGY.fat),
-    };
-  }
-
-  const factor = target / current;
+function roundState(s) {
   return {
-    protein_g: Math.round(sanitizeGrams(state.protein_g) * factor),
-    carb_g: Math.round(sanitizeGrams(state.carb_g) * factor),
-    fat_g: Math.round(sanitizeGrams(state.fat_g) * factor),
+    protein_g: Math.round(s.protein_g),
+    carb_g: Math.round(s.carb_g),
+    fat_g: Math.round(s.fat_g),
   };
+}
+
+function macroCal(state, m) {
+  return ENERGY[m] * sanitizeGrams(state[gk(m)]);
+}
+
+function resolveMacro(state, pins, M, value) {
+  const out = {
+    protein_g: sanitizeGrams(state.protein_g),
+    carb_g: sanitizeGrams(state.carb_g),
+    fat_g: sanitizeGrams(state.fat_g),
+  };
+  const newVal = sanitizeGrams(value);
+
+  if (!pins.calories) {
+    out[gk(M)] = newVal;
+    return roundState(out);
+  }
+
+  const K = calc(state).calories;
+  const others = MACRO_KEYS.filter((m) => m !== M && !pins[m]);
+  if (others.length === 0) return roundState(out); // infeasible; leave as-is
+
+  const fixedCal = MACRO_KEYS.filter((m) => m !== M && pins[m]).reduce(
+    (s, m) => s + macroCal(state, m),
+    0,
+  );
+
+  let mVal = newVal;
+  const targetOthersCal = K - ENERGY[M] * mVal - fixedCal;
+
+  if (targetOthersCal < 0) {
+    mVal = Math.max(0, (K - fixedCal) / ENERGY[M]);
+    out[gk(M)] = mVal;
+    for (const m of others) out[gk(m)] = 0;
+    return roundState(out);
+  }
+
+  out[gk(M)] = mVal;
+  const currentOthersCal = others.reduce((s, m) => s + macroCal(state, m), 0);
+  if (currentOthersCal === 0) {
+    const each = targetOthersCal / others.length;
+    for (const m of others) out[gk(m)] = each / ENERGY[m];
+  } else {
+    const factor = targetOthersCal / currentOthersCal;
+    for (const m of others) out[gk(m)] = sanitizeGrams(state[gk(m)]) * factor;
+  }
+  return roundState(out);
+}
+
+function resolveCalories(state, pins, value) {
+  const out = {
+    protein_g: sanitizeGrams(state.protein_g),
+    carb_g: sanitizeGrams(state.carb_g),
+    fat_g: sanitizeGrams(state.fat_g),
+  };
+  const T = sanitizeGrams(value);
+  const unpinned = MACRO_KEYS.filter((m) => !pins[m]);
+  if (unpinned.length === 0) return roundState(out);
+
+  const fixedCal = MACRO_KEYS.filter((m) => pins[m]).reduce(
+    (s, m) => s + macroCal(state, m),
+    0,
+  );
+  const targetUnpinnedCal = T - fixedCal;
+
+  if (targetUnpinnedCal <= 0) {
+    for (const m of unpinned) out[gk(m)] = 0;
+    return roundState(out);
+  }
+
+  const currentUnpinnedCal = unpinned.reduce((s, m) => s + macroCal(state, m), 0);
+  if (currentUnpinnedCal === 0) {
+    const each = targetUnpinnedCal / unpinned.length;
+    for (const m of unpinned) out[gk(m)] = each / ENERGY[m];
+  } else {
+    const factor = targetUnpinnedCal / currentUnpinnedCal;
+    for (const m of unpinned) out[gk(m)] = sanitizeGrams(state[gk(m)]) * factor;
+  }
+  return roundState(out);
+}
+
+// Resolve a single user change into a new valid grams state, honoring pins.
+// control is 'protein' | 'carb' | 'fat' | 'calories'.
+export function resolve(state, pins, control, value) {
+  if (control === 'calories') return resolveCalories(state, pins, value);
+  return resolveMacro(state, pins, control, value);
+}
+
+// Back-compat: scale all macros to a target with no pins.
+export function scaleToCalories(state, targetCalories) {
+  return resolve(
+    state,
+    { protein: false, carb: false, fat: false, calories: false },
+    'calories',
+    targetCalories,
+  );
 }
