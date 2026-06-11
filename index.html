@@ -45,6 +45,7 @@
       "Two-way macro to calorie conversion",
       "Live protein/carb/fat percentage split",
       "Lock up to two macros and/or calories and solve for the rest",
+      "Estimate BMR and daily calorie target (Mifflin-St Jeor) and apply it",
       "Works offline, mobile-first, no ads or tracking"
     ]
   }
@@ -74,6 +75,16 @@
         "@type": "Question",
         "name": "How much protein should I eat per day?",
         "acceptedAnswer": { "@type": "Answer", "text": "For active people and those losing weight, roughly 1.6 to 2.2 grams of protein per kilogram of body weight per day is a widely cited range. Enter that many grams and lock the protein row to hold it fixed while you adjust the rest." }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I calculate my BMR and daily calorie target?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Use the Calorie Target Estimator. Enter your sex, age, weight, and height and it computes your BMR (basal metabolic rate) with the Mifflin-St Jeor formula, multiplies by an activity level to get maintenance calories (TDEE), and adjusts for a cut, maintain, or bulk goal. Tap 'Use as calorie target' to load that number into the sliders so your macros solve to it." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is BMR and how is it different from TDEE?",
+        "acceptedAnswer": { "@type": "Answer", "text": "BMR (basal metabolic rate) is the energy your body burns at complete rest just to stay alive. TDEE (total daily energy expenditure) is your BMR multiplied by an activity factor, so it reflects movement and exercise too. TDEE, adjusted for your goal, is the calorie target to actually eat to." }
       },
       {
         "@type": "Question",
@@ -160,6 +171,96 @@
       </section>
     </article>
 
+    <article class="label label--bmr">
+      <header class="masthead">
+        <h2>Calorie Target<br />Estimator</h2>
+        <p class="tagline">Estimate how many calories your body needs, then send the target to the sliders above.</p>
+      </header>
+
+      <div class="units" role="group" aria-label="Units">
+        <button type="button" id="units-metric" class="unit-tab" aria-pressed="true">Metric</button>
+        <button type="button" id="units-imperial" class="unit-tab" aria-pressed="false">Imperial</button>
+      </div>
+
+      <div class="bmr-grid">
+        <div class="field field--sex" role="group" aria-label="Sex">
+          <span class="field__name">Sex</span>
+          <div class="seg">
+            <button type="button" id="sex-male" class="seg__btn" aria-pressed="true">Male</button>
+            <button type="button" id="sex-female" class="seg__btn" aria-pressed="false">Female</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__name" for="bmr-age">Age</label>
+          <span class="field__input">
+            <input type="number" id="bmr-age" min="0" step="1" inputmode="numeric" />
+            <span class="unit">yr</span>
+          </span>
+        </div>
+
+        <div class="field">
+          <label class="field__name" for="bmr-weight">Weight</label>
+          <span class="field__input">
+            <input type="number" id="bmr-weight" min="0" step="0.1" inputmode="decimal" />
+            <span class="unit" id="weight-unit">kg</span>
+          </span>
+        </div>
+
+        <div class="field field--height">
+          <label class="field__name" for="bmr-height-cm">Height</label>
+          <span class="field__input" id="height-metric">
+            <input type="number" id="bmr-height-cm" min="0" step="0.1" inputmode="decimal" />
+            <span class="unit">cm</span>
+          </span>
+          <span class="field__input field__input--ftin" id="height-imperial" hidden>
+            <input type="number" id="bmr-height-ft" min="0" step="1" inputmode="numeric" aria-label="Height feet" />
+            <span class="unit">ft</span>
+            <input type="number" id="bmr-height-in" min="0" step="0.1" inputmode="decimal" aria-label="Height inches" />
+            <span class="unit">in</span>
+          </span>
+        </div>
+
+        <div class="field field--wide">
+          <label class="field__name" for="bmr-activity">Activity</label>
+          <select id="bmr-activity">
+            <option value="sedentary">Sedentary — little or no exercise</option>
+            <option value="light">Light — 1–3 days/week</option>
+            <option value="moderate" selected>Moderate — 3–5 days/week</option>
+            <option value="active">Active — 6–7 days/week</option>
+            <option value="very_active">Very active — hard training / physical job</option>
+          </select>
+        </div>
+
+        <div class="field field--wide" role="group" aria-label="Goal">
+          <span class="field__name">Goal</span>
+          <div class="seg seg--3">
+            <button type="button" id="goal-cut" class="seg__btn" aria-pressed="false">Cut</button>
+            <button type="button" id="goal-maintain" class="seg__btn" aria-pressed="true">Maintain</button>
+            <button type="button" id="goal-bulk" class="seg__btn" aria-pressed="false">Bulk</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bmr-out" aria-live="polite">
+        <div class="bmr-stat">
+          <span class="bmr-stat__name">BMR<small>resting</small></span>
+          <span class="bmr-stat__value" id="bmr-value">—</span>
+        </div>
+        <div class="bmr-stat">
+          <span class="bmr-stat__name">TDEE<small>maintenance</small></span>
+          <span class="bmr-stat__value" id="tdee-value">—</span>
+        </div>
+        <div class="bmr-stat bmr-stat--target">
+          <span class="bmr-stat__name">Daily target<small id="goal-note">maintain</small></span>
+          <span class="bmr-stat__value" id="target-value">—</span>
+        </div>
+      </div>
+
+      <button type="button" id="use-target" class="use-target" disabled>Use as calorie target →</button>
+      <p class="disclaimer">Mifflin-St Jeor estimate — a starting point, not medical advice.</p>
+    </article>
+
     <article class="label label--info">
       <h2 class="info__head">What it does</h2>
       <p class="info__lead">A free macro ⇄ calorie calculator. Drag protein, carbs, and fat to watch your total calories and macro split update live — or lock the values you want to keep and let the calculator solve the rest. No sign-up, no ads, no tracking: it runs entirely in your browser.</p>
@@ -177,6 +278,12 @@
 
         <dt>How much protein should I eat per day?</dt>
         <dd>For active people and those losing weight, roughly 1.6 to 2.2 grams of protein per kilogram of body weight per day is a widely cited range. Enter that many grams and lock the protein row to hold it fixed while you adjust the rest.</dd>
+
+        <dt>How do I calculate my BMR and daily calorie target?</dt>
+        <dd>Use the Calorie Target Estimator. Enter your sex, age, weight, and height and it computes your BMR (basal metabolic rate) with the Mifflin-St Jeor formula, multiplies by an activity level to get maintenance calories (TDEE), and adjusts for a cut, maintain, or bulk goal. Tap “Use as calorie target” to load that number into the sliders so your macros solve to it.</dd>
+
+        <dt>What is BMR and how is it different from TDEE?</dt>
+        <dd>BMR (basal metabolic rate) is the energy your body burns at complete rest just to stay alive. TDEE (total daily energy expenditure) is your BMR multiplied by an activity factor, so it reflects movement and exercise too. TDEE, adjusted for your goal, is the calorie target to actually eat to.</dd>
 
         <dt>Is this macro calculator free?</dt>
         <dd>Yes. It is completely free with no sign-up, no ads, and no tracking. Everything runs in your browser and nothing you enter is sent to a server.</dd>

@@ -6,6 +6,56 @@ export const DEFAULT_STATE = { protein_g: 150, carb_g: 200, fat_g: 60 };
 
 const MACRO_KEYS = ['protein', 'carb', 'fat'];
 
+// --- BMR / TDEE -------------------------------------------------------------
+
+// Activity multipliers applied to BMR to estimate maintenance calories (TDEE).
+export const ACTIVITY = {
+  sedentary: 1.2,
+  light: 1.375,
+  moderate: 1.55,
+  active: 1.725,
+  very_active: 1.9,
+};
+
+// Goal multipliers applied to TDEE to get a daily target.
+export const GOAL = { cut: 0.8, maintain: 1, bulk: 1.15 };
+
+// Unit conversions (metric is the internal source of truth).
+export function lbToKg(lb) {
+  return sanitizeNumber(lb) * 0.45359237;
+}
+export function kgToLb(kg) {
+  return sanitizeNumber(kg) / 0.45359237;
+}
+export function ftInToCm(ft, inch) {
+  return (sanitizeNumber(ft) * 12 + sanitizeNumber(inch)) * 2.54;
+}
+export function cmToFtIn(cm) {
+  const totalIn = sanitizeNumber(cm) / 2.54;
+  const ft = Math.floor(totalIn / 12);
+  return { ft, inch: totalIn - ft * 12 };
+}
+
+// Mifflin-St Jeor basal metabolic rate (kcal/day), floored at 0. Female uses the
+// −161 constant; any other sex value uses the male +5 constant.
+export function bmrMifflin({ sex, weight_kg, height_cm, age }) {
+  const kg = sanitizeNumber(weight_kg);
+  const cm = sanitizeNumber(height_cm);
+  const yr = sanitizeNumber(age);
+  const constant = sex === 'female' ? -161 : 5;
+  return Math.max(0, 10 * kg + 6.25 * cm - 5 * yr + constant);
+}
+
+// Maintenance calories = BMR × activity multiplier (unknown key → sedentary).
+export function tdee(bmr, activityKey) {
+  return sanitizeNumber(bmr) * (ACTIVITY[activityKey] ?? ACTIVITY.sedentary);
+}
+
+// Goal-adjusted daily target = TDEE × goal multiplier (unknown key → maintain).
+export function applyGoal(tdeeValue, goalKey) {
+  return sanitizeNumber(tdeeValue) * (GOAL[goalKey] ?? GOAL.maintain);
+}
+
 // Number of binding constraints implied by the pins (pins has exactly the four
 // boolean keys protein/carb/fat/calories, so counting the true ones is enough).
 export function constraintCount(pins) {
@@ -20,11 +70,14 @@ export function canPin(pins, control) {
 }
 
 // Coerce any value to a non-negative finite number; invalid/negative -> 0.
-export function sanitizeGrams(value) {
+export function sanitizeNumber(value) {
   const n = Number(value);
   if (!Number.isFinite(n) || n < 0) return 0;
   return n;
 }
+
+// Back-compat alias: grams are just a non-negative finite number.
+export const sanitizeGrams = sanitizeNumber;
 
 // Derive calories, per-macro kcal, and percentage split from grams.
 export function calc(state) {

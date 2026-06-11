@@ -2,14 +2,24 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   sanitizeGrams,
+  sanitizeNumber,
   ENERGY,
   MAX,
   DEFAULT_STATE,
+  ACTIVITY,
+  GOAL,
   calc,
   scaleToCalories,
   constraintCount,
   canPin,
   resolve,
+  bmrMifflin,
+  tdee,
+  applyGoal,
+  lbToKg,
+  kgToLb,
+  ftInToCm,
+  cmToFtIn,
 } from '../calc.js';
 
 test('sanitizeGrams coerces invalid input to 0 and passes valid numbers', () => {
@@ -19,6 +29,48 @@ test('sanitizeGrams coerces invalid input to 0 and passes valid numbers', () => 
   assert.equal(sanitizeGrams(null), 0);
   assert.equal(sanitizeGrams('150'), 150);
   assert.equal(sanitizeGrams(150), 150);
+});
+
+test('sanitizeNumber is the shared coercion (sanitizeGrams is its alias)', () => {
+  assert.equal(sanitizeNumber(-5), 0);
+  assert.equal(sanitizeNumber('abc'), 0);
+  assert.equal(sanitizeNumber('70'), 70);
+  assert.equal(sanitizeGrams, sanitizeNumber);
+});
+
+test('bmrMifflin matches the Mifflin-St Jeor formula for male and female', () => {
+  // Male, 80kg, 180cm, 30y: 10*80 + 6.25*180 − 5*30 + 5 = 1780
+  assert.equal(bmrMifflin({ sex: 'male', weight_kg: 80, height_cm: 180, age: 30 }), 1780);
+  // Female, 60kg, 165cm, 30y: 10*60 + 6.25*165 − 5*30 − 161 = 1320.25
+  assert.equal(bmrMifflin({ sex: 'female', weight_kg: 60, height_cm: 165, age: 30 }), 1320.25);
+});
+
+test('bmrMifflin defaults to the male constant for an unknown sex and floors at 0', () => {
+  assert.equal(
+    bmrMifflin({ sex: 'other', weight_kg: 80, height_cm: 180, age: 30 }),
+    bmrMifflin({ sex: 'male', weight_kg: 80, height_cm: 180, age: 30 }),
+  );
+  assert.equal(bmrMifflin({ sex: 'male', weight_kg: 0, height_cm: 0, age: 200 }), 0);
+});
+
+test('tdee multiplies BMR by the activity factor, unknown key -> sedentary', () => {
+  assert.equal(tdee(2000, 'moderate'), 2000 * ACTIVITY.moderate);
+  assert.equal(tdee(2000, 'nonsense'), 2000 * ACTIVITY.sedentary);
+});
+
+test('applyGoal multiplies TDEE by the goal factor, unknown key -> maintain', () => {
+  assert.equal(applyGoal(2500, 'cut'), 2500 * GOAL.cut);
+  assert.equal(applyGoal(2500, 'bulk'), 2500 * GOAL.bulk);
+  assert.equal(applyGoal(2500, 'nonsense'), 2500);
+});
+
+test('unit conversions round-trip metric <-> imperial', () => {
+  assert.ok(approx(kgToLb(lbToKg(154)), 154));
+  assert.ok(approx(lbToKg(220), 99.7903214));
+  assert.ok(approx(ftInToCm(5, 11), 180.34));
+  const { ft, inch } = cmToFtIn(180.34);
+  assert.equal(ft, 5);
+  assert.ok(approx(inch, 11));
 });
 
 test('energy constants, slider ranges, and default state are correct', () => {

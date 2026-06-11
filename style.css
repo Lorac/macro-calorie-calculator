@@ -333,6 +333,169 @@ input[type="range"]:disabled { cursor: not-allowed; }
   input[type="range"]::-moz-range-thumb { width: 16px; height: 30px; }
 }
 
+/* ---- BMR / calorie-target estimator ---- */
+.label--bmr {
+  margin-top: 1.5rem;
+  animation: ink-in 0.45s both;
+  animation-delay: 0.4s;
+}
+.label--bmr h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 6.5vw, 2.1rem);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+}
+
+/* Unit toggle (Metric / Imperial) */
+.units {
+  display: flex;
+  margin: 0.9rem 0 0.2rem;
+  border: 2.5px solid var(--ink);
+}
+.unit-tab {
+  flex: 1;
+  padding: 0.55rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: none;
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+.unit-tab + .unit-tab { border-left: 2.5px solid var(--ink); }
+.unit-tab[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+/* Input grid */
+.bmr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 0.7rem;
+  padding: 0.85rem 0 0.4rem;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-top: 0.55rem;
+  border-top: 1.5px solid var(--ink);
+}
+.field--wide { grid-column: 1 / -1; }
+.field__name {
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+.field__input { display: flex; align-items: center; gap: 0.4rem; }
+.field__input input[type="number"] {
+  grid-area: auto; /* reset the macro-row placement */
+  width: 100%;
+  min-width: 0;
+}
+.field__input .unit { font-weight: 700; font-size: 0.82rem; }
+.field__input--ftin { gap: 0.3rem; }
+
+select#bmr-activity {
+  width: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  padding: 0.45rem 0.5rem;
+  font: inherit;
+  font-weight: 700;
+}
+select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
+
+/* Segmented controls (sex / goal) */
+.seg { display: flex; border: 2px solid var(--ink); }
+.seg__btn {
+  flex: 1;
+  padding: 0.5rem 0.2rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: none;
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.seg__btn + .seg__btn { border-left: 2px solid var(--ink); }
+.seg__btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+/* Output stats */
+.bmr-out {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 2.5px solid var(--ink);
+  margin-top: 0.6rem;
+}
+.bmr-stat {
+  padding: 0.6rem 0.55rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.bmr-stat + .bmr-stat { border-left: 2px solid var(--ink); }
+.bmr-stat__name {
+  display: flex;
+  flex-direction: column;
+  font-weight: 800;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.bmr-stat__name small {
+  font-weight: 500;
+  font-size: 0.62rem;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.65;
+}
+.bmr-stat__value {
+  font-size: clamp(1.4rem, 7vw, 1.9rem);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.bmr-stat--target { background: var(--ink); color: var(--paper); }
+
+.use-target {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.8rem;
+  background: var(--accent);
+  color: var(--paper);
+  border: 2.5px solid var(--ink);
+  border-radius: 0;
+  box-shadow: 5px 5px 0 var(--ink);
+  font: inherit;
+  font-weight: 900;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+.use-target:active { box-shadow: 2px 2px 0 var(--ink); transform: translate(3px, 3px); }
+.use-target:disabled {
+  background: var(--paper-2);
+  color: var(--ink);
+  opacity: 0.5;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+@media (max-width: 520px), (pointer: coarse) {
+  .unit-tab, .seg__btn { min-height: 44px; }
+  select#bmr-activity { min-height: 44px; font-size: 1rem; }
+}
+
 /* ---- Info / FAQ panel ---- */
 .label--info { margin-top: 1.5rem; animation: ink-in 0.45s both; animation-delay: 0.4s; }
 .info__head {

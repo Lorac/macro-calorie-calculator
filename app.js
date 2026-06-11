@@ -1,4 +1,7 @@
-import { calc, resolve, canPin, sanitizeGrams, DEFAULT_STATE, MAX } from './calc.js';
+import {
+  calc, resolve, canPin, sanitizeGrams, sanitizeNumber, DEFAULT_STATE, MAX,
+  bmrMifflin, tdee, applyGoal, lbToKg, kgToLb, ftInToCm, cmToFtIn,
+} from './calc.js';
 
 const STATE_KEY = 'macro-calc-state';
 const PINS_KEY = 'macro-calc-pins';
@@ -123,3 +126,148 @@ function wire() {
 }
 
 wire();
+
+// --- BMR / TDEE estimator ---------------------------------------------------
+
+const BMR_KEY = 'macro-calc-bmr';
+const DEFAULT_BMR = {
+  sex: 'male', units: 'metric', activity: 'moderate', goal: 'maintain',
+  age: '', weight: '', height_cm: '', height_ft: '', height_in: '',
+};
+const GOAL_NOTE = { cut: 'cut −20%', maintain: 'maintain', bulk: 'bulk +15%' };
+
+let bmr = loadBmr();
+
+function loadBmr() {
+  try {
+    const p = JSON.parse(localStorage.getItem(BMR_KEY) ?? 'null');
+    if (!p || typeof p !== 'object') return structuredClone(DEFAULT_BMR);
+    return { ...structuredClone(DEFAULT_BMR), ...p };
+  } catch {
+    return structuredClone(DEFAULT_BMR);
+  }
+}
+
+let bmrSaveTimer = 0;
+function saveBmrSoon() {
+  clearTimeout(bmrSaveTimer);
+  bmrSaveTimer = setTimeout(() => save(BMR_KEY, bmr), 200);
+}
+addEventListener('pagehide', () => { clearTimeout(bmrSaveTimer); save(BMR_KEY, bmr); });
+
+// Convert the raw input fields (in the user's chosen units) to metric kg/cm.
+function bmrMetric() {
+  if (bmr.units === 'imperial') {
+    return {
+      weight_kg: lbToKg(bmr.weight),
+      height_cm: ftInToCm(bmr.height_ft, bmr.height_in),
+    };
+  }
+  return { weight_kg: sanitizeNumber(bmr.weight), height_cm: sanitizeNumber(bmr.height_cm) };
+}
+
+// A BMR estimate is "ready" only once weight, height, and age are all entered.
+function bmrReady() {
+  const { weight_kg, height_cm } = bmrMetric();
+  return weight_kg > 0 && height_cm > 0 && sanitizeNumber(bmr.age) > 0;
+}
+
+let currentTarget = 0;
+
+function renderBmr() {
+  // Unit tabs + labels.
+  el('units-metric').setAttribute('aria-pressed', String(bmr.units === 'metric'));
+  el('units-imperial').setAttribute('aria-pressed', String(bmr.units === 'imperial'));
+  el('weight-unit').textContent = bmr.units === 'imperial' ? 'lb' : 'kg';
+  el('height-metric').hidden = bmr.units === 'imperial';
+  el('height-imperial').hidden = bmr.units !== 'imperial';
+
+  // Segmented controls.
+  el('sex-male').setAttribute('aria-pressed', String(bmr.sex === 'male'));
+  el('sex-female').setAttribute('aria-pressed', String(bmr.sex === 'female'));
+  for (const g of ['cut', 'maintain', 'bulk']) {
+    el(`goal-${g}`).setAttribute('aria-pressed', String(bmr.goal === g));
+  }
+  el('bmr-activity').value = bmr.activity;
+  el('goal-note').textContent = GOAL_NOTE[bmr.goal];
+
+  // Outputs.
+  if (bmrReady()) {
+    const { weight_kg, height_cm } = bmrMetric();
+    const b = bmrMifflin({ sex: bmr.sex, weight_kg, height_cm, age: bmr.age });
+    const t = tdee(b, bmr.activity);
+    currentTarget = Math.round(applyGoal(t, bmr.goal));
+    el('bmr-value').textContent = kcalFmt.format(b);
+    el('tdee-value').textContent = kcalFmt.format(t);
+    el('target-value').textContent = kcalFmt.format(currentTarget);
+    el('use-target').disabled = false;
+  } else {
+    currentTarget = 0;
+    el('bmr-value').textContent = '—';
+    el('tdee-value').textContent = '—';
+    el('target-value').textContent = '—';
+    el('use-target').disabled = true;
+  }
+}
+
+// Write the field inputs from state (used on load + unit switches).
+function fillBmrInputs() {
+  el('bmr-age').value = bmr.age;
+  el('bmr-weight').value = bmr.weight;
+  el('bmr-height-cm').value = bmr.height_cm;
+  el('bmr-height-ft').value = bmr.height_ft;
+  el('bmr-height-in').value = bmr.height_in;
+}
+
+function setBmr(key, value) {
+  bmr[key] = value;
+  saveBmrSoon();
+  renderBmr();
+}
+
+// Switch units, converting the current entered values so the body stays the same.
+function setUnits(units) {
+  if (units === bmr.units) return;
+  if (units === 'imperial') {
+    bmr.weight = bmr.weight === '' ? '' : round1(kgToLb(bmr.weight));
+    if (bmr.height_cm !== '') {
+      const { ft, inch } = cmToFtIn(bmr.height_cm);
+      bmr.height_ft = ft;
+      bmr.height_in = round1(inch);
+    }
+  } else {
+    bmr.weight = bmr.weight === '' ? '' : round1(lbToKg(bmr.weight));
+    if (bmr.height_ft !== '' || bmr.height_in !== '') {
+      bmr.height_cm = round1(ftInToCm(bmr.height_ft, bmr.height_in));
+    }
+  }
+  bmr.units = units;
+  fillBmrInputs();
+  saveBmrSoon();
+  renderBmr();
+}
+
+const round1 = (n) => Math.round(sanitizeNumber(n) * 10) / 10;
+
+function wireBmr() {
+  el('units-metric').addEventListener('click', () => setUnits('metric'));
+  el('units-imperial').addEventListener('click', () => setUnits('imperial'));
+  el('sex-male').addEventListener('click', () => setBmr('sex', 'male'));
+  el('sex-female').addEventListener('click', () => setBmr('sex', 'female'));
+  for (const g of ['cut', 'maintain', 'bulk']) {
+    el(`goal-${g}`).addEventListener('click', () => setBmr('goal', g));
+  }
+  el('bmr-activity').addEventListener('change', (e) => setBmr('activity', e.target.value));
+  el('bmr-age').addEventListener('input', (e) => setBmr('age', e.target.value));
+  el('bmr-weight').addEventListener('input', (e) => setBmr('weight', e.target.value));
+  el('bmr-height-cm').addEventListener('input', (e) => setBmr('height_cm', e.target.value));
+  el('bmr-height-ft').addEventListener('input', (e) => setBmr('height_ft', e.target.value));
+  el('bmr-height-in').addEventListener('input', (e) => setBmr('height_in', e.target.value));
+  el('use-target').addEventListener('click', () => {
+    if (currentTarget > 0) changeControl('calories', currentTarget);
+  });
+  fillBmrInputs();
+  renderBmr();
+}
+
+wireBmr();
