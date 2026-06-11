@@ -46,6 +46,8 @@
       "Live protein/carb/fat percentage split",
       "Lock up to two macros and/or calories and solve for the rest",
       "Estimate BMR and daily calorie target (Mifflin-St Jeor) and apply it",
+      "Add exercise calories burned and see your live deficit or surplus",
+      "Set protein from grams per kilogram of body weight",
       "Works offline, mobile-first, no ads or tracking"
     ]
   }
@@ -85,6 +87,21 @@
         "@type": "Question",
         "name": "What is BMR and how is it different from TDEE?",
         "acceptedAnswer": { "@type": "Answer", "text": "BMR (basal metabolic rate) is the energy your body burns at complete rest just to stay alive. TDEE (total daily energy expenditure) is your BMR multiplied by an activity factor, so it reflects movement and exercise too. TDEE, adjusted for your goal, is the calorie target to actually eat to." }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I know if I'm in a calorie deficit or surplus?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The energy balance panel subtracts your calories burned (TDEE plus any logged exercise) from your calories eaten (the macro total). A negative result is a deficit, so you lose weight; a positive result is a surplus, so you gain. It also projects the weekly weight change using roughly 7700 kcal per kg (3500 per lb)." }
+      },
+      {
+        "@type": "Question",
+        "name": "How many calories does exercise burn?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Pick an activity and enter the minutes, and the calculator estimates the burn as MET × body weight in kg × hours. Running, cycling, swimming, weight training, HIIT, yoga, hiking, and brisk walking are built in. That burn is added to your expenditure for the deficit/surplus calculation." }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I set protein based on body weight?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Enter a grams-per-kilogram target (a common range is 1.6 to 2.2 g/kg) in the protein target field. Using the body weight you already entered, it computes total grams and sets the protein slider for you. Your weight can be in kilograms or pounds." }
       },
       {
         "@type": "Question",
@@ -232,6 +249,38 @@
           </select>
         </div>
 
+        <div class="field field--wide field--exercise">
+          <label class="field__name" for="exercise-activity">Exercise today <span class="field__hint" id="exercise-burn">+0 kcal</span></label>
+          <div class="exercise-row">
+            <select id="exercise-activity">
+              <option value="" selected>No exercise</option>
+              <option value="walking">Walking (brisk)</option>
+              <option value="running">Running</option>
+              <option value="cycling">Cycling</option>
+              <option value="swimming">Swimming</option>
+              <option value="weights">Weight training</option>
+              <option value="hiit">HIIT</option>
+              <option value="yoga">Yoga</option>
+              <option value="hiking">Hiking</option>
+            </select>
+            <span class="field__input">
+              <input type="number" id="exercise-min" min="0" step="1" inputmode="numeric" aria-label="Exercise minutes" />
+              <span class="unit">min</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="field field--wide field--protein-bw">
+          <label class="field__name" for="protein-per-kg">Protein target <span class="field__hint" id="protein-bw-hint">optional · sets protein</span></label>
+          <div class="exercise-row">
+            <span class="field__input">
+              <input type="number" id="protein-per-kg" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 1.8" />
+              <span class="unit">g/kg body wt</span>
+            </span>
+            <button type="button" id="protein-apply" class="apply-btn" disabled>Set →</button>
+          </div>
+        </div>
+
         <div class="field field--wide" role="group" aria-label="Goal">
           <span class="field__name">Goal</span>
           <div class="seg seg--3">
@@ -258,6 +307,21 @@
       </div>
 
       <button type="button" id="use-target" class="use-target" disabled>Use as calorie target →</button>
+
+      <section class="balance" id="balance" aria-live="polite">
+        <p class="balance__head">Energy balance</p>
+        <div class="balance__io">
+          <span class="balance__cell"><small>Eaten (macros)</small><b id="balance-in">—</b></span>
+          <span class="balance__op">−</span>
+          <span class="balance__cell"><small>Burned (TDEE + exercise)</small><b id="balance-out">—</b></span>
+        </div>
+        <div class="balance__result" id="balance-result">
+          <span class="balance__verdict" id="balance-verdict">Enter your stats above</span>
+          <span class="balance__delta" id="balance-delta">—</span>
+          <span class="balance__weight" id="balance-weight"></span>
+        </div>
+      </section>
+
       <p class="disclaimer">Mifflin-St Jeor estimate — a starting point, not medical advice.</p>
     </article>
 
@@ -284,6 +348,15 @@
 
         <dt>What is BMR and how is it different from TDEE?</dt>
         <dd>BMR (basal metabolic rate) is the energy your body burns at complete rest just to stay alive. TDEE (total daily energy expenditure) is your BMR multiplied by an activity factor, so it reflects movement and exercise too. TDEE, adjusted for your goal, is the calorie target to actually eat to.</dd>
+
+        <dt>How do I know if I'm in a calorie deficit or surplus?</dt>
+        <dd>The energy balance panel subtracts your calories burned (TDEE plus any logged exercise) from your calories eaten (the macro total). A negative result is a deficit, so you lose weight; a positive result is a surplus, so you gain. It also projects the weekly weight change using roughly 7700 kcal per kg (3500 per lb).</dd>
+
+        <dt>How many calories does exercise burn?</dt>
+        <dd>Pick an activity and enter the minutes, and the calculator estimates the burn as MET × body weight in kg × hours. Running, cycling, swimming, weight training, HIIT, yoga, hiking, and brisk walking are built in. That burn is added to your expenditure for the deficit/surplus calculation.</dd>
+
+        <dt>How do I set protein based on body weight?</dt>
+        <dd>Enter a grams-per-kilogram target (a common range is 1.6 to 2.2 g/kg) in the protein target field. Using the body weight you already entered, it computes total grams and sets the protein slider for you. Your weight can be in kilograms or pounds.</dd>
 
         <dt>Is this macro calculator free?</dt>
         <dd>Yes. It is completely free with no sign-up, no ads, and no tracking. Everything runs in your browser and nothing you enter is sent to a server.</dd>

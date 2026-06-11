@@ -491,9 +491,116 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
   cursor: not-allowed;
 }
 
+/* Exercise + protein-target rows */
+.field__hint {
+  font-weight: 600;
+  font-size: 0.66rem;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.7;
+}
+.field--exercise .field__hint { opacity: 1; font-weight: 800; }
+.exercise-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+.exercise-row .field__input { min-width: 0; }
+.exercise-row select {
+  width: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  padding: 0.45rem 0.5rem;
+  font: inherit;
+  font-weight: 700;
+}
+.exercise-row select:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
+.exercise-row input[type="number"] { width: 4.5rem; }
+.field--protein-bw .exercise-row { grid-template-columns: 1fr auto; }
+.field--protein-bw input[type="number"] { width: 100%; }
+
+.apply-btn {
+  background: var(--protein);
+  color: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.apply-btn:active { box-shadow: 2px 2px 0 var(--ink); }
+.apply-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Energy balance (deficit / surplus) */
+.balance {
+  border: 2.5px solid var(--ink);
+  margin-top: 0.9rem;
+}
+.balance__head {
+  margin: 0;
+  padding: 0.5rem 0.7rem;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.balance__io {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem;
+  border-bottom: 2px solid var(--ink);
+}
+.balance__cell { display: flex; flex-direction: column; gap: 0.15rem; }
+.balance__cell small { font-size: 0.62rem; font-weight: 600; opacity: 0.7; }
+.balance__cell b {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.balance__op { font-size: 1.3rem; font-weight: 900; }
+.balance__result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.7rem;
+  text-align: center;
+}
+.balance__verdict {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.balance__delta {
+  font-size: clamp(1.8rem, 9vw, 2.4rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.balance__weight { font-size: 0.8rem; font-weight: 700; opacity: 0.85; }
+.balance--deficit { --bal: var(--protein); }
+.balance--surplus { --bal: var(--fat); }
+.balance--deficit .balance__verdict,
+.balance--deficit .balance__delta { color: var(--protein); }
+.balance--surplus .balance__verdict,
+.balance--surplus .balance__delta { color: var(--fat); }
+
 @media (max-width: 520px), (pointer: coarse) {
   .unit-tab, .seg__btn { min-height: 44px; }
-  select#bmr-activity { min-height: 44px; font-size: 1rem; }
+  select#bmr-activity, .exercise-row select, .apply-btn { min-height: 44px; }
+  select#bmr-activity, .exercise-row select { font-size: 1rem; }
 }
 
 /* ---- Info / FAQ panel ---- */

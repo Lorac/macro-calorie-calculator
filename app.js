@@ -1,6 +1,7 @@
 import {
   calc, resolve, canPin, sanitizeGrams, sanitizeNumber, DEFAULT_STATE, MAX,
   bmrMifflin, tdee, applyGoal, lbToKg, kgToLb, ftInToCm, cmToFtIn,
+  exerciseKcal, weeklyWeightChange, proteinFromBodyweight,
 } from './calc.js';
 
 const STATE_KEY = 'macro-calc-state';
@@ -10,6 +11,11 @@ const CONTROLS = [...MACROS, 'calories'];
 const NO_PINS = { protein: false, carb: false, fat: false, calories: false };
 const kcalFmt = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
 const el = (id) => document.getElementById(id);
+
+// The energy-balance panel depends on both cards. render() (macro card) calls
+// this hook; the BMR section swaps in the real renderBalance once its state
+// exists. No-op until then so the initial wire()/render() can't hit a TDZ.
+let renderBalanceHook = () => {};
 
 let state = loadState();
 let pins = loadPins();
@@ -87,6 +93,7 @@ function render() {
   el('calories').value = Math.round(calories);
   el('total-kcal').textContent = kcalFmt.format(calories);
   renderLocks();
+  renderBalanceHook(); // keep the deficit/surplus panel in sync with intake
 }
 
 let stateSaveTimer = 0;
@@ -133,6 +140,7 @@ const BMR_KEY = 'macro-calc-bmr';
 const DEFAULT_BMR = {
   sex: 'male', units: 'metric', activity: 'moderate', goal: 'maintain',
   age: '', weight: '', height_cm: '', height_ft: '', height_in: '',
+  exercise: '', exerciseMin: '', proteinPerKg: '',
 };
 const GOAL_NOTE = { cut: 'cut −20%', maintain: 'maintain', bulk: 'bulk +15%' };
 
@@ -208,6 +216,78 @@ function renderBmr() {
     el('target-value').textContent = '—';
     el('use-target').disabled = true;
   }
+
+  renderExercise();
+  renderProteinApply();
+  renderBalance();
+}
+
+// Calories burned by today's logged exercise (needs only weight + minutes).
+function exerciseBurn() {
+  const { weight_kg } = bmrMetric();
+  return exerciseKcal(bmr.exercise, weight_kg, bmr.exerciseMin);
+}
+
+function renderExercise() {
+  el('exercise-burn').textContent = `+${kcalFmt.format(exerciseBurn())} kcal`;
+}
+
+// Grams of protein the entered g/kg target implies for the current body weight.
+function proteinTargetGrams() {
+  const { weight_kg } = bmrMetric();
+  return proteinFromBodyweight(bmr.proteinPerKg, weight_kg);
+}
+
+function renderProteinApply() {
+  const { weight_kg } = bmrMetric();
+  const grams = proteinTargetGrams();
+  el('protein-apply').disabled = !(grams > 0);
+  if (sanitizeNumber(bmr.proteinPerKg) <= 0) {
+    el('protein-bw-hint').textContent = 'optional · sets protein';
+  } else if (weight_kg <= 0) {
+    el('protein-bw-hint').textContent = 'enter weight above';
+  } else {
+    el('protein-bw-hint').textContent = `→ ${Math.round(grams)} g protein`;
+  }
+}
+
+// Deficit/surplus: macro calories in vs TDEE + exercise out, plus weekly change.
+function renderBalance() {
+  const intake = calc(state).calories;
+  const section = el('balance');
+  section.classList.remove('balance--deficit', 'balance--surplus');
+  el('balance-in').textContent = kcalFmt.format(intake);
+
+  if (!bmrReady()) {
+    el('balance-out').textContent = '—';
+    el('balance-verdict').textContent = 'Enter your stats above';
+    el('balance-delta').textContent = '—';
+    el('balance-weight').textContent = '';
+    return;
+  }
+
+  const { weight_kg, height_cm } = bmrMetric();
+  const b = bmrMifflin({ sex: bmr.sex, weight_kg, height_cm, age: bmr.age });
+  const expend = tdee(b, bmr.activity) + exerciseBurn();
+  el('balance-out').textContent = kcalFmt.format(expend);
+
+  const balance = intake - expend; // positive = surplus, negative = deficit
+  const absKcal = Math.round(Math.abs(balance));
+  const unit = bmr.units === 'imperial' ? 'lb' : 'kg';
+
+  if (absKcal < 1) {
+    el('balance-verdict').textContent = 'Maintenance';
+    el('balance-delta').textContent = '±0 kcal';
+    el('balance-weight').textContent = 'weight stable';
+    return;
+  }
+
+  const deficit = balance < 0;
+  const weekly = Math.abs(weeklyWeightChange(balance, bmr.units));
+  section.classList.add(deficit ? 'balance--deficit' : 'balance--surplus');
+  el('balance-verdict').textContent = deficit ? 'Deficit · losing' : 'Surplus · gaining';
+  el('balance-delta').textContent = `${deficit ? '−' : '+'}${kcalFmt.format(absKcal)} kcal`;
+  el('balance-weight').textContent = `≈ ${deficit ? '−' : '+'}${weekly.toFixed(2)} ${unit}/week`;
 }
 
 // Write the field inputs from state (used on load + unit switches).
@@ -217,6 +297,9 @@ function fillBmrInputs() {
   el('bmr-height-cm').value = bmr.height_cm;
   el('bmr-height-ft').value = bmr.height_ft;
   el('bmr-height-in').value = bmr.height_in;
+  el('exercise-activity').value = bmr.exercise;
+  el('exercise-min').value = bmr.exerciseMin;
+  el('protein-per-kg').value = bmr.proteinPerKg;
 }
 
 function setBmr(key, value) {
@@ -266,6 +349,14 @@ function wireBmr() {
   el('use-target').addEventListener('click', () => {
     if (currentTarget > 0) changeControl('calories', currentTarget);
   });
+  el('exercise-activity').addEventListener('change', (e) => setBmr('exercise', e.target.value));
+  el('exercise-min').addEventListener('input', (e) => setBmr('exerciseMin', e.target.value));
+  el('protein-per-kg').addEventListener('input', (e) => setBmr('proteinPerKg', e.target.value));
+  el('protein-apply').addEventListener('click', () => {
+    const grams = proteinTargetGrams();
+    if (grams > 0) changeControl('protein', grams); // moves the protein slider up top
+  });
+  renderBalanceHook = renderBalance; // now the macro card's render() updates the balance
   fillBmrInputs();
   renderBmr();
 }

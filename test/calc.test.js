@@ -20,6 +20,12 @@ import {
   kgToLb,
   ftInToCm,
   cmToFtIn,
+  MET,
+  exerciseKcal,
+  weeklyWeightChange,
+  proteinFromBodyweight,
+  KCAL_PER_KG,
+  KCAL_PER_LB,
 } from '../calc.js';
 
 test('sanitizeGrams coerces invalid input to 0 and passes valid numbers', () => {
@@ -62,6 +68,38 @@ test('applyGoal multiplies TDEE by the goal factor, unknown key -> maintain', ()
   assert.equal(applyGoal(2500, 'cut'), 2500 * GOAL.cut);
   assert.equal(applyGoal(2500, 'bulk'), 2500 * GOAL.bulk);
   assert.equal(applyGoal(2500, 'nonsense'), 2500);
+});
+
+test('exerciseKcal = MET * kg * hours, unknown/empty activity -> 0', () => {
+  // running 30 min at 80kg: 9.8 * 80 * 0.5 = 392
+  assert.ok(approx(exerciseKcal('running', 80, 30), 392));
+  assert.equal(exerciseKcal('running', 80, 0), 0);
+  assert.equal(exerciseKcal('', 80, 30), 0); // no activity selected
+  assert.equal(exerciseKcal('nonsense', 80, 30), 0);
+  assert.equal(exerciseKcal('walking', 'abc', 30), 0); // invalid weight sanitized
+});
+
+test('MET table has positive values for every listed activity', () => {
+  for (const [k, v] of Object.entries(MET)) {
+    assert.ok(v > 0, `${k} should have a positive MET`);
+  }
+});
+
+test('weeklyWeightChange projects a daily balance over a week, signed', () => {
+  // 1100 kcal/day deficit over a week = 7700 kcal = 1 kg loss
+  assert.ok(approx(weeklyWeightChange(-1100, 'metric'), -1));
+  assert.ok(approx(weeklyWeightChange(-1100, 'metric') * KCAL_PER_KG, -7700));
+  // 500 kcal/day surplus in imperial: 500*7/3500 = 1 lb gain
+  assert.ok(approx(weeklyWeightChange(500, 'imperial'), 1));
+  assert.ok(approx(weeklyWeightChange(500, 'imperial') * KCAL_PER_LB, 3500));
+  assert.equal(weeklyWeightChange(NaN, 'metric'), 0);
+});
+
+test('proteinFromBodyweight multiplies g/kg target by body weight', () => {
+  assert.equal(proteinFromBodyweight(1.8, 80), 144);
+  assert.equal(proteinFromBodyweight(2, 75), 150);
+  assert.equal(proteinFromBodyweight('abc', 80), 0); // invalid ratio -> 0
+  assert.equal(proteinFromBodyweight(2, -10), 0); // invalid weight -> 0
 });
 
 test('unit conversions round-trip metric <-> imperial', () => {

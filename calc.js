@@ -56,6 +56,47 @@ export function applyGoal(tdeeValue, goalKey) {
   return sanitizeNumber(tdeeValue) * (GOAL[goalKey] ?? GOAL.maintain);
 }
 
+// --- Physical activity + energy balance -------------------------------------
+
+// Metabolic equivalents (kcal per kg of body weight per hour) for common exercise.
+export const MET = {
+  walking: 4.3,
+  running: 9.8,
+  cycling: 7.5,
+  swimming: 7.0,
+  weights: 5.0,
+  hiit: 8.0,
+  yoga: 3.0,
+  hiking: 6.0,
+};
+
+// Calories burned by an exercise session: MET × weight(kg) × hours. Unknown
+// activity (or empty selection) → 0.
+export function exerciseKcal(metKey, weight_kg, minutes) {
+  const met = MET[metKey] ?? 0;
+  return met * sanitizeNumber(weight_kg) * (sanitizeNumber(minutes) / 60);
+}
+
+// Grams of protein implied by a g-per-kg-bodyweight target and a body weight.
+// e.g. 1.8 g/kg at 80 kg → 144 g. Inputs sanitized to non-negative.
+export function proteinFromBodyweight(gPerKg, weight_kg) {
+  return sanitizeNumber(gPerKg) * sanitizeNumber(weight_kg);
+}
+
+// Energy in one kg / one lb of body mass (classic ~7700 / ~3500 kcal rules).
+export const KCAL_PER_KG = 7700;
+export const KCAL_PER_LB = 3500;
+
+// Project a daily energy balance (intake − expenditure, signed) to a weekly
+// weight change in the chosen units. Positive = surplus/gain, negative =
+// deficit/loss. Non-finite input → 0.
+export function weeklyWeightChange(dailyBalanceKcal, units) {
+  const n = Number(dailyBalanceKcal);
+  if (!Number.isFinite(n)) return 0;
+  const perUnit = units === 'imperial' ? KCAL_PER_LB : KCAL_PER_KG;
+  return (n * 7) / perUnit;
+}
+
 // Number of binding constraints implied by the pins (pins has exactly the four
 // boolean keys protein/carb/fat/calories, so counting the true ones is enough).
 export function constraintCount(pins) {
