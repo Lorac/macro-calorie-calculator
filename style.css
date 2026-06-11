@@ -9,6 +9,9 @@
 }
 
 * { box-sizing: border-box; }
+/* The hidden attribute must win over display rules like .field__input{display:flex}
+   (a class selector otherwise outranks the UA [hidden] rule, leaking hidden fields). */
+[hidden] { display: none !important; }
 
 body {
   margin: 0;

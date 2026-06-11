@@ -6,5 +6,8 @@
   "description": "Free, ad-free macro <-> calorie calculator. Static, zero runtime dependencies.",
   "scripts": {
     "test": "node --test"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.10.2"
   }
 }
