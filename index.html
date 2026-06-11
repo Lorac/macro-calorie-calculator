@@ -3,11 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Macro ⇄ Calorie Calculator</title>
-  <meta name="description" content="Free, ad-free macro and calorie calculator." />
-  <meta name="theme-color" content="#f3ecd8" />
+  <title>Free Macro Calculator — Protein, Carbs &amp; Fat ⇄ Calories</title>
+  <meta name="description" content="Free macro calculator, no sign-up or ads. Drag protein, carbs, and fat to see total calories and your macro split instantly — or lock values and let it solve the rest." />
+  <meta name="theme-color" content="#f4edd8" />
+  <link rel="canonical" href="https://macros.roussinb.dev/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://macros.roussinb.dev/" />
+  <meta property="og:site_name" content="Macro ⇄ Calorie Calculator" />
+  <meta property="og:title" content="Free Macro Calculator — Protein, Carbs & Fat ⇄ Calories" />
+  <meta property="og:description" content="Drag protein, carbs, and fat to see total calories and your macro split instantly — or lock values and let it solve the rest. Free, no sign-up, no ads." />
+  <meta property="og:image" content="https://macros.roussinb.dev/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Macro ⇄ Calorie Calculator — free, no signup, no ads" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Free Macro Calculator — Protein, Carbs & Fat ⇄ Calories" />
+  <meta name="twitter:description" content="Drag protein, carbs, and fat to see total calories and your macro split instantly — or lock values and let it solve the rest. Free, no sign-up, no ads." />
+  <meta name="twitter:image" content="https://macros.roussinb.dev/og.png" />
+
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Macro ⇄ Calorie Calculator",
+    "url": "https://macros.roussinb.dev/",
+    "description": "A free, no-signup macro calculator. Convert between grams of protein, carbohydrate, and fat and total daily calories, see your macro percentage split live, and lock values to solve for the rest.",
+    "applicationCategory": "HealthApplication",
+    "operatingSystem": "Any (web browser)",
+    "browserRequirements": "Requires JavaScript",
+    "inLanguage": "en",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "featureList": [
+      "Two-way macro to calorie conversion",
+      "Live protein/carb/fat percentage split",
+      "Lock up to two macros and/or calories and solve for the rest",
+      "Works offline, mobile-first, no ads or tracking"
+    ]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a macro calculator?",
+        "acceptedAnswer": { "@type": "Answer", "text": "A macro (macronutrient) calculator converts between grams of protein, carbohydrate, and fat and total calories. This one works both ways: set grams to see calories and your percentage split, or set a calorie target and lock the macros you want to keep fixed." }
+      },
+      {
+        "@type": "Question",
+        "name": "How many calories are in protein, carbs, and fat?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Protein and carbohydrate each provide about 4 calories per gram, and fat provides about 9 calories per gram. Those are the conversion factors this calculator uses." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a good macro split?",
+        "acceptedAnswer": { "@type": "Answer", "text": "A common starting point is 30% protein, 40% carbs, and 30% fat, but the best split depends on your goal, body weight, and activity. To experiment, lock protein and slide the calorie target — the other macros scale to match." }
+      },
+      {
+        "@type": "Question",
+        "name": "How much protein should I eat per day?",
+        "acceptedAnswer": { "@type": "Answer", "text": "For active people and those losing weight, roughly 1.6 to 2.2 grams of protein per kilogram of body weight per day is a widely cited range. Enter that many grams and lock the protein row to hold it fixed while you adjust the rest." }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this macro calculator free?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is completely free with no sign-up, no ads, and no tracking. Everything runs in your browser and nothing you enter is sent to a server." }
+      },
+      {
+        "@type": "Question",
+        "name": "Does it work on mobile?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is built mobile-first with large touch targets and keeps working offline once the page has loaded." }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <main class="app">
@@ -78,6 +158,34 @@
           <span class="key key-fat">Fat</span>
         </div>
       </section>
+    </article>
+
+    <article class="label label--info">
+      <h2 class="info__head">What it does</h2>
+      <p class="info__lead">A free macro ⇄ calorie calculator. Drag protein, carbs, and fat to watch your total calories and macro split update live — or lock the values you want to keep and let the calculator solve the rest. No sign-up, no ads, no tracking: it runs entirely in your browser.</p>
+
+      <h2 class="info__head">FAQ</h2>
+      <dl class="faq">
+        <dt>What is a macro calculator?</dt>
+        <dd>A macro (macronutrient) calculator converts between grams of protein, carbohydrate, and fat and total calories. This one works both ways: set grams to see calories and your percentage split, or set a calorie target and lock the macros you want to keep fixed.</dd>
+
+        <dt>How many calories are in protein, carbs, and fat?</dt>
+        <dd>Protein and carbohydrate each provide about 4 calories per gram, and fat provides about 9 calories per gram. Those are the conversion factors this calculator uses.</dd>
+
+        <dt>What is a good macro split?</dt>
+        <dd>A common starting point is 30% protein, 40% carbs, and 30% fat, but the best split depends on your goal, body weight, and activity. To experiment, lock protein and slide the calorie target — the other macros scale to match.</dd>
+
+        <dt>How much protein should I eat per day?</dt>
+        <dd>For active people and those losing weight, roughly 1.6 to 2.2 grams of protein per kilogram of body weight per day is a widely cited range. Enter that many grams and lock the protein row to hold it fixed while you adjust the rest.</dd>
+
+        <dt>Is this macro calculator free?</dt>
+        <dd>Yes. It is completely free with no sign-up, no ads, and no tracking. Everything runs in your browser and nothing you enter is sent to a server.</dd>
+
+        <dt>Does it work on mobile?</dt>
+        <dd>Yes. It is built mobile-first with large touch targets and keeps working offline once the page has loaded.</dd>
+      </dl>
+
+      <p class="disclaimer">For general information only — not medical or dietary advice.</p>
     </article>
   </main>
 
