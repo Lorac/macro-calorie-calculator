@@ -23,6 +23,7 @@ import {
   MET,
   exerciseKcal,
   weeklyWeightChange,
+  dailyKcalForWeeklyChange,
   proteinFromBodyweight,
   KCAL_PER_KG,
   KCAL_PER_LB,
@@ -93,6 +94,14 @@ test('weeklyWeightChange projects a daily balance over a week, signed', () => {
   assert.ok(approx(weeklyWeightChange(500, 'imperial'), 1));
   assert.ok(approx(weeklyWeightChange(500, 'imperial') * KCAL_PER_LB, 3500));
   assert.equal(weeklyWeightChange(NaN, 'metric'), 0);
+});
+
+test('dailyKcalForWeeklyChange inverts weeklyWeightChange', () => {
+  assert.ok(approx(dailyKcalForWeeklyChange(0.25, 'metric'), 275)); // 0.25*7700/7
+  assert.ok(approx(dailyKcalForWeeklyChange(0.5, 'imperial'), 250)); // 0.5*3500/7
+  assert.equal(dailyKcalForWeeklyChange('abc', 'metric'), 0);
+  // round-trips with weeklyWeightChange
+  assert.ok(approx(weeklyWeightChange(dailyKcalForWeeklyChange(0.4, 'metric'), 'metric'), 0.4));
 });
 
 test('proteinFromBodyweight multiplies g/kg target by body weight', () => {

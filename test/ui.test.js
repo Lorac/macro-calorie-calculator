@@ -105,3 +105,27 @@ test('protein-apply sets the protein macro from g/kg * body weight', async () =>
   btn.click();
   assert.equal($(doc, 'protein-grams').value, '144'); // 1.8 * 80
 });
+
+test('protein target switches to g/lb in imperial and stays equivalent', async () => {
+  const { doc } = await load({ 'macro-calc-bmr': { ...READY_BMR, proteinPerKg: 1.8 } });
+  assert.match($(doc, 'protein-unit').textContent, /g\/kg/);
+
+  $(doc, 'units-imperial').click(); // 1.8 g/kg -> ~0.82 g/lb, 80kg -> ~176.4lb
+  assert.match($(doc, 'protein-unit').textContent, /g\/lb/);
+  assert.ok(Math.abs(Number($(doc, 'protein-per-kg').value) - 0.82) < 0.02);
+
+  $(doc, 'protein-apply').click(); // grams preserved across the unit switch
+  assert.ok(Math.abs(Number($(doc, 'protein-grams').value) - 144) <= 2);
+});
+
+test('bulk goal is rate-driven: gain field shows and target = TDEE + chosen surplus', async () => {
+  const { doc } = await load({ 'macro-calc-bmr': { ...READY_BMR, goal: 'bulk', gainRate: '0.25' } });
+  assert.equal($(doc, 'gain-field').hidden, false);
+  assert.match($(doc, 'gain-unit').textContent, /kg\/week/);
+  // BMR 1780 * 1.55 = 2759 TDEE; +275 (0.25 kg/wk) = 3034
+  const target = Number($(doc, 'target-value').textContent.replace(/[^0-9]/g, ''));
+  assert.ok(Math.abs(target - 3034) <= 2, `target ~3034, got ${target}`);
+
+  $(doc, 'goal-maintain').click(); // non-bulk hides the rate field
+  assert.equal($(doc, 'gain-field').hidden, true);
+});

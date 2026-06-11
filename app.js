@@ -1,7 +1,7 @@
 import {
   calc, resolve, canPin, sanitizeGrams, sanitizeNumber, DEFAULT_STATE, MAX,
   bmrMifflin, tdee, applyGoal, lbToKg, kgToLb, ftInToCm, cmToFtIn,
-  exerciseKcal, weeklyWeightChange, proteinFromBodyweight,
+  exerciseKcal, weeklyWeightChange, dailyKcalForWeeklyChange, proteinFromBodyweight,
 } from './calc.js';
 
 const STATE_KEY = 'macro-calc-state';
@@ -140,9 +140,9 @@ const BMR_KEY = 'macro-calc-bmr';
 const DEFAULT_BMR = {
   sex: 'male', units: 'metric', activity: 'moderate', goal: 'maintain',
   age: '', weight: '', height_cm: '', height_ft: '', height_in: '',
-  exercise: '', exerciseMin: '', proteinPerKg: '',
+  exercise: '', exerciseMin: '', proteinPerKg: '', gainRate: '0.25',
 };
-const GOAL_NOTE = { cut: 'cut −20%', maintain: 'maintain', bulk: 'bulk +15%' };
+const GOAL_NOTE = { cut: 'cut −20%', maintain: 'maintain' };
 
 let bmr = loadBmr();
 
@@ -197,14 +197,24 @@ function renderBmr() {
     el(`goal-${g}`).setAttribute('aria-pressed', String(bmr.goal === g));
   }
   el('bmr-activity').value = bmr.activity;
-  el('goal-note').textContent = GOAL_NOTE[bmr.goal];
+
+  // Bulk is rate-driven: reveal the gain-rate field and label its unit.
+  const massUnit = bmr.units === 'imperial' ? 'lb' : 'kg';
+  el('gain-field').hidden = bmr.goal !== 'bulk';
+  el('gain-unit').textContent = `${massUnit}/week`;
+  el('goal-note').textContent = bmr.goal === 'bulk'
+    ? `+${sanitizeNumber(bmr.gainRate)} ${massUnit}/wk`
+    : GOAL_NOTE[bmr.goal];
 
   // Outputs.
   if (bmrReady()) {
     const { weight_kg, height_cm } = bmrMetric();
     const b = bmrMifflin({ sex: bmr.sex, weight_kg, height_cm, age: bmr.age });
     const t = tdee(b, bmr.activity);
-    currentTarget = Math.round(applyGoal(t, bmr.goal));
+    const target = bmr.goal === 'bulk'
+      ? t + dailyKcalForWeeklyChange(bmr.gainRate, bmr.units) // TDEE + chosen surplus
+      : applyGoal(t, bmr.goal); // cut ×0.8 / maintain ×1
+    currentTarget = Math.round(target);
     el('bmr-value').textContent = kcalFmt.format(b);
     el('tdee-value').textContent = kcalFmt.format(t);
     el('target-value').textContent = kcalFmt.format(currentTarget);
@@ -232,19 +242,23 @@ function renderExercise() {
   el('exercise-burn').textContent = `+${kcalFmt.format(exerciseBurn())} kcal`;
 }
 
-// Grams of protein the entered g/kg target implies for the current body weight.
+// Grams of protein the entered target implies. The ratio is per the selected
+// unit (g/kg in metric, g/lb in imperial), so it multiplies the raw entered
+// weight in that same unit.
 function proteinTargetGrams() {
-  const { weight_kg } = bmrMetric();
-  return proteinFromBodyweight(bmr.proteinPerKg, weight_kg);
+  return proteinFromBodyweight(bmr.proteinPerKg, bmr.weight);
 }
 
 function renderProteinApply() {
-  const { weight_kg } = bmrMetric();
+  const imperial = bmr.units === 'imperial';
+  el('protein-unit').textContent = imperial ? 'g/lb body wt' : 'g/kg body wt';
+  el('protein-per-kg').placeholder = imperial ? 'e.g. 0.8' : 'e.g. 1.8';
+
   const grams = proteinTargetGrams();
   el('protein-apply').disabled = !(grams > 0);
   if (sanitizeNumber(bmr.proteinPerKg) <= 0) {
     el('protein-bw-hint').textContent = 'optional · sets protein';
-  } else if (weight_kg <= 0) {
+  } else if (sanitizeNumber(bmr.weight) <= 0) {
     el('protein-bw-hint').textContent = 'enter weight above';
   } else {
     el('protein-bw-hint').textContent = `→ ${Math.round(grams)} g protein`;
@@ -300,6 +314,7 @@ function fillBmrInputs() {
   el('exercise-activity').value = bmr.exercise;
   el('exercise-min').value = bmr.exerciseMin;
   el('protein-per-kg').value = bmr.proteinPerKg;
+  el('gain-rate').value = bmr.gainRate;
 }
 
 function setBmr(key, value) {
@@ -318,11 +333,16 @@ function setUnits(units) {
       bmr.height_ft = ft;
       bmr.height_in = round1(inch);
     }
+    // g/kg -> g/lb (same scalar as kg->lb weight) so the implied grams hold.
+    bmr.proteinPerKg = ratioConv(bmr.proteinPerKg, LB_PER_KG);
+    bmr.gainRate = ratioConv(bmr.gainRate, 1 / LB_PER_KG); // kg/wk -> lb/wk (like weight)
   } else {
     bmr.weight = bmr.weight === '' ? '' : round1(lbToKg(bmr.weight));
     if (bmr.height_ft !== '' || bmr.height_in !== '') {
       bmr.height_cm = round1(ftInToCm(bmr.height_ft, bmr.height_in));
     }
+    bmr.proteinPerKg = ratioConv(bmr.proteinPerKg, 1 / LB_PER_KG); // g/lb -> g/kg
+    bmr.gainRate = ratioConv(bmr.gainRate, LB_PER_KG); // lb/wk -> kg/wk
   }
   bmr.units = units;
   fillBmrInputs();
@@ -331,6 +351,10 @@ function setUnits(units) {
 }
 
 const round1 = (n) => Math.round(sanitizeNumber(n) * 10) / 10;
+const LB_PER_KG = 0.45359237;
+// Convert a per-bodyweight ratio (e.g. g/kg) by `factor`, preserving '' (blank)
+// and rounding to 2 dp. Used so g/kg <-> g/lb keeps the implied total grams.
+const ratioConv = (v, factor) => (v === '' ? '' : Math.round(sanitizeNumber(v) * factor * 100) / 100);
 
 function wireBmr() {
   el('units-metric').addEventListener('click', () => setUnits('metric'));
@@ -352,6 +376,7 @@ function wireBmr() {
   el('exercise-activity').addEventListener('change', (e) => setBmr('exercise', e.target.value));
   el('exercise-min').addEventListener('input', (e) => setBmr('exerciseMin', e.target.value));
   el('protein-per-kg').addEventListener('input', (e) => setBmr('proteinPerKg', e.target.value));
+  el('gain-rate').addEventListener('input', (e) => setBmr('gainRate', e.target.value));
   el('protein-apply').addEventListener('click', () => {
     const grams = proteinTargetGrams();
     if (grams > 0) changeControl('protein', grams); // moves the protein slider up top

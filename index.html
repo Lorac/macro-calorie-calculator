@@ -101,7 +101,7 @@
       {
         "@type": "Question",
         "name": "How do I set protein based on body weight?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Enter a grams-per-kilogram target (a common range is 1.6 to 2.2 g/kg) in the protein target field. Using the body weight you already entered, it computes total grams and sets the protein slider for you. Your weight can be in kilograms or pounds." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Use the protein target field. In metric it takes grams per kilogram (a common range is 1.6 to 2.2 g/kg); switch to imperial and it becomes grams per pound. Using the body weight you already entered, it computes total grams and sets the protein slider for you." }
       },
       {
         "@type": "Question",
@@ -275,7 +275,7 @@
           <div class="exercise-row">
             <span class="field__input">
               <input type="number" id="protein-per-kg" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 1.8" />
-              <span class="unit">g/kg body wt</span>
+              <span class="unit" id="protein-unit">g/kg body wt</span>
             </span>
             <button type="button" id="protein-apply" class="apply-btn" disabled>Set →</button>
           </div>
@@ -288,6 +288,14 @@
             <button type="button" id="goal-maintain" class="seg__btn" aria-pressed="true">Maintain</button>
             <button type="button" id="goal-bulk" class="seg__btn" aria-pressed="false">Bulk</button>
           </div>
+        </div>
+
+        <div class="field field--wide field--gain" id="gain-field" hidden>
+          <label class="field__name" for="gain-rate">Target gain rate</label>
+          <span class="field__input">
+            <input type="number" id="gain-rate" min="0" step="0.05" inputmode="decimal" placeholder="e.g. 0.25" />
+            <span class="unit" id="gain-unit">kg/week</span>
+          </span>
         </div>
       </div>
 
@@ -356,7 +364,7 @@
         <dd>Pick an activity and enter the minutes, and the calculator estimates the burn as MET × body weight in kg × hours. Running, cycling, swimming, weight training, HIIT, yoga, hiking, and brisk walking are built in. That burn is added to your expenditure for the deficit/surplus calculation.</dd>
 
         <dt>How do I set protein based on body weight?</dt>
-        <dd>Enter a grams-per-kilogram target (a common range is 1.6 to 2.2 g/kg) in the protein target field. Using the body weight you already entered, it computes total grams and sets the protein slider for you. Your weight can be in kilograms or pounds.</dd>
+        <dd>Use the protein target field. In metric it takes grams per kilogram (a common range is 1.6 to 2.2 g/kg); switch to imperial and it becomes grams per pound. Using the body weight you already entered, it computes total grams and sets the protein slider for you.</dd>
 
         <dt>Is this macro calculator free?</dt>
         <dd>Yes. It is completely free with no sign-up, no ads, and no tracking. Everything runs in your browser and nothing you enter is sent to a server.</dd>

@@ -97,6 +97,14 @@ export function weeklyWeightChange(dailyBalanceKcal, units) {
   return (n * 7) / perUnit;
 }
 
+// Inverse of weeklyWeightChange: the daily calorie surplus/deficit needed to
+// gain/lose `weeklyRate` units of body mass per week. e.g. 0.25 kg/week ->
+// 0.25*7700/7 = 275 kcal/day. Used to turn a chosen bulk rate into a target.
+export function dailyKcalForWeeklyChange(weeklyRate, units) {
+  const perUnit = units === 'imperial' ? KCAL_PER_LB : KCAL_PER_KG;
+  return (sanitizeNumber(weeklyRate) * perUnit) / 7;
+}
+
 // Number of binding constraints implied by the pins (pins has exactly the four
 // boolean keys protein/carb/fat/calories, so counting the true ones is enough).
 export function constraintCount(pins) {
