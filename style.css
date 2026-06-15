@@ -68,6 +68,14 @@ h1 {
   font-weight: 500;
   line-height: 1.35;
 }
+.masthead-link {
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+.masthead-link:hover { color: var(--accent); }
 
 /* ---- "Amount per day" + hero calories ---- */
 .per {
@@ -620,51 +628,73 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
 .label--info > .info__head:first-child { margin-top: 0; }
 .info__lead { margin: 0; font-size: 0.92rem; line-height: 1.5; }
 .faq { margin: 0; }
-.faq dt {
+.faq__item {
   margin-top: 0.85rem;
   padding-top: 0.85rem;
   border-top: 1.5px solid var(--ink);
-  font-weight: 800;
-  font-size: 1rem;
 }
-.faq dt:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
+.faq__item:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+.faq dt { font-weight: 800; font-size: 1rem; }
 .faq dd { margin: 0.35rem 0 0; font-size: 0.9rem; line-height: 1.5; }
 .disclaimer { margin: 1.2rem 0 0; font-size: 0.74rem; font-style: italic; opacity: 0.65; }
 
-/* ---- Desktop: editorial broadsheet spread ----
-   The single column is right for phones but wastes a wide screen. Here the
-   calculator becomes a sticky hero in the left column while the estimator and
-   the FAQ stack in the right column — both interactive tools sit side by side,
-   and the hero stays in view as you scroll the reference material. */
+/* ---- Desktop: both tools on one screen, reference below the fold ----
+   The single column is right for phones but wastes a wide screen. Here the two
+   interactive cards — calculator and estimator — sit side by side in one row so
+   that everything that matters, including the energy balance at the foot of the
+   estimator, fits within a 1080p screen without scrolling. The FAQ/info is
+   reference material: it spans full width below the fold and is reachable from
+   the "FAQ" link in the masthead, so it never pushes the tools off-screen. */
 @media (min-width: 900px) {
-  body { padding: 3rem 2rem; align-items: flex-start; }
+  body { padding: 1.75rem 2rem; align-items: flex-start; }
 
   .app {
     max-width: 1040px;
     display: grid;
-    grid-template-columns: minmax(380px, 1.04fr) minmax(360px, 0.96fr);
+    grid-template-columns: minmax(380px, 1fr) minmax(380px, 1fr);
     align-items: start;
     column-gap: 1.75rem;
     row-gap: 1.6rem;
   }
 
-  /* Hero calculator: left column, spans both rows, sticks while you scroll. */
-  .label {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-    align-self: start;
-    position: sticky;
-    top: 1.75rem;
-  }
-
+  .label { grid-column: 1; grid-row: 1; box-shadow: 12px 12px 0 var(--ink); }
   .label--bmr { grid-column: 2; grid-row: 1; margin-top: 0; }
-  .label--info { grid-column: 2; grid-row: 2; margin-top: 0; }
+  .label--info { grid-column: 1 / -1; grid-row: 2; margin-top: 0; }
 
-  /* The hero earns a slightly heavier drop shadow to sit "above" the spread. */
-  .label { box-shadow: 12px 12px 0 var(--ink); }
+  /* Tighten the estimator's vertical rhythm and pair the wide fields 2-up so the
+     whole card — through the energy balance — fits a maximized 1080p browser
+     (whose usable height is well under 1080 once chrome/scaling is counted). */
+  .label--bmr .masthead { padding-bottom: 0.5rem; margin-bottom: 0.4rem; }
+  .label--bmr h2 { font-size: clamp(1.4rem, 5vw, 1.8rem); }
+  .label--bmr .tagline { margin-top: 0.4rem; }
+  .label--bmr .units { margin-top: 0.6rem; }
+  .label--bmr .bmr-grid { gap: 0.3rem 0.7rem; padding: 0.55rem 0 0.25rem; }
+  .label--bmr .field { padding-top: 0.35rem; }
+  /* Activity / Exercise / Protein / Goal no longer each claim a full row. */
+  .label--bmr .field--wide { grid-column: auto; }
+  .label--bmr .bmr-out { margin-top: 0.5rem; }
+  .label--bmr .bmr-stat { padding: 0.45rem 0.5rem 0.5rem; }
+  .label--bmr .use-target { margin-top: 0.5rem; padding: 0.6rem; }
+  .label--bmr .balance { margin-top: 0.5rem; }
+  .label--bmr .balance__head { padding: 0.4rem 0.7rem; }
+  .label--bmr .balance__io { padding: 0.5rem 0.7rem; }
+  .label--bmr .balance__result { padding: 0.5rem 0.7rem; }
+  .label--bmr .disclaimer { margin-top: 0.55rem; }
+
+  /* Keep prose to a readable measure, then flow the FAQ across two columns so
+     the reference band stays compact instead of one very wide line. */
+  .label--info > .info__head:first-child { margin-top: 0; }
+  .label--info .info__lead { max-width: 70ch; }
+  .label--info .faq {
+    column-count: 2;
+    column-gap: 2.5rem;
+  }
+  /* Each question + answer is one unbreakable group, so a dt never lands in a
+     different column from its dd. */
+  .label--info .faq__item { break-inside: avoid; }
 }
 
-/* Wider still: let the hero breathe and nudge the columns apart. */
+/* Wider still: let the spread breathe and nudge the columns apart. */
 @media (min-width: 1240px) {
   body { padding: 4rem 2rem; }
   .app { max-width: 1120px; column-gap: 2.25rem; }

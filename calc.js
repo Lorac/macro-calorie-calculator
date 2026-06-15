@@ -58,25 +58,6 @@ export function applyGoal(tdeeValue, goalKey) {
 
 // --- Physical activity + energy balance -------------------------------------
 
-// Metabolic equivalents (kcal per kg of body weight per hour) for common exercise.
-export const MET = {
-  walking: 4.3,
-  running: 9.8,
-  cycling: 7.5,
-  swimming: 7.0,
-  weights: 5.0,
-  hiit: 8.0,
-  yoga: 3.0,
-  hiking: 6.0,
-};
-
-// Calories burned by an exercise session: MET × weight(kg) × hours. Unknown
-// activity (or empty selection) → 0.
-export function exerciseKcal(metKey, weight_kg, minutes) {
-  const met = MET[metKey] ?? 0;
-  return met * sanitizeNumber(weight_kg) * (sanitizeNumber(minutes) / 60);
-}
-
 // Grams of protein implied by a g-per-kg-bodyweight target and a body weight.
 // e.g. 1.8 g/kg at 80 kg → 144 g. Inputs sanitized to non-negative.
 export function proteinFromBodyweight(gPerKg, weight_kg) {

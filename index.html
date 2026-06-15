@@ -122,7 +122,7 @@
     <article class="label">
       <header class="masthead">
         <h1>Macro <span class="swap" aria-hidden="true">⇄</span> Calorie<br />Calculator</h1>
-        <p class="tagline">Drag a slider or type. Lock <span aria-hidden="true">🔒</span> any rows you want held fixed.</p>
+        <p class="tagline">Drag a slider or type. Lock <span aria-hidden="true">🔒</span> any rows you want held fixed. <a class="masthead-link" href="#info">What is this? &amp; FAQ ↓</a></p>
       </header>
 
       <p class="per">Amount per day</p>
@@ -249,27 +249,6 @@
           </select>
         </div>
 
-        <div class="field field--wide field--exercise">
-          <label class="field__name" for="exercise-activity">Exercise today <span class="field__hint" id="exercise-burn">+0 kcal</span></label>
-          <div class="exercise-row">
-            <select id="exercise-activity">
-              <option value="" selected>No exercise</option>
-              <option value="walking">Walking (brisk)</option>
-              <option value="running">Running</option>
-              <option value="cycling">Cycling</option>
-              <option value="swimming">Swimming</option>
-              <option value="weights">Weight training</option>
-              <option value="hiit">HIIT</option>
-              <option value="yoga">Yoga</option>
-              <option value="hiking">Hiking</option>
-            </select>
-            <span class="field__input">
-              <input type="number" id="exercise-min" min="0" step="1" inputmode="numeric" aria-label="Exercise minutes" />
-              <span class="unit">min</span>
-            </span>
-          </div>
-        </div>
-
         <div class="field field--wide field--protein-bw">
           <label class="field__name" for="protein-per-kg">Protein target <span class="field__hint" id="protein-bw-hint">optional · sets protein</span></label>
           <div class="exercise-row">
@@ -333,44 +312,66 @@
       <p class="disclaimer">Mifflin-St Jeor estimate — a starting point, not medical advice.</p>
     </article>
 
-    <article class="label label--info">
+    <article class="label label--info" id="info">
       <h2 class="info__head">What it does</h2>
       <p class="info__lead">A free macro ⇄ calorie calculator. Drag protein, carbs, and fat to watch your total calories and macro split update live — or lock the values you want to keep and let the calculator solve the rest. No sign-up, no ads, no tracking: it runs entirely in your browser.</p>
 
       <h2 class="info__head">FAQ</h2>
       <dl class="faq">
-        <dt>What is a macro calculator?</dt>
-        <dd>A macro (macronutrient) calculator converts between grams of protein, carbohydrate, and fat and total calories. This one works both ways: set grams to see calories and your percentage split, or set a calorie target and lock the macros you want to keep fixed.</dd>
+        <div class="faq__item">
+          <dt>What is a macro calculator?</dt>
+          <dd>A macro (macronutrient) calculator converts between grams of protein, carbohydrate, and fat and total calories. This one works both ways: set grams to see calories and your percentage split, or set a calorie target and lock the macros you want to keep fixed.</dd>
+        </div>
 
-        <dt>How many calories are in protein, carbs, and fat?</dt>
-        <dd>Protein and carbohydrate each provide about 4 calories per gram, and fat provides about 9 calories per gram. Those are the conversion factors this calculator uses.</dd>
+        <div class="faq__item">
+          <dt>How many calories are in protein, carbs, and fat?</dt>
+          <dd>Protein and carbohydrate each provide about 4 calories per gram, and fat provides about 9 calories per gram. Those are the conversion factors this calculator uses.</dd>
+        </div>
 
-        <dt>What is a good macro split?</dt>
-        <dd>A common starting point is 30% protein, 40% carbs, and 30% fat, but the best split depends on your goal, body weight, and activity. To experiment, lock protein and slide the calorie target — the other macros scale to match.</dd>
+        <div class="faq__item">
+          <dt>What is a good macro split?</dt>
+          <dd>A common starting point is 30% protein, 40% carbs, and 30% fat, but the best split depends on your goal, body weight, and activity. To experiment, lock protein and slide the calorie target — the other macros scale to match.</dd>
+        </div>
 
-        <dt>How much protein should I eat per day?</dt>
-        <dd>For active people and those losing weight, roughly 1.6 to 2.2 grams of protein per kilogram of body weight per day is a widely cited range. Enter that many grams and lock the protein row to hold it fixed while you adjust the rest.</dd>
+        <div class="faq__item">
+          <dt>How much protein should I eat per day?</dt>
+          <dd>For active people and those losing weight, roughly 1.6 to 2.2 grams of protein per kilogram of body weight per day is a widely cited range. Enter that many grams and lock the protein row to hold it fixed while you adjust the rest.</dd>
+        </div>
 
-        <dt>How do I calculate my BMR and daily calorie target?</dt>
-        <dd>Use the Calorie Target Estimator. Enter your sex, age, weight, and height and it computes your BMR (basal metabolic rate) with the Mifflin-St Jeor formula, multiplies by an activity level to get maintenance calories (TDEE), and adjusts for a cut, maintain, or bulk goal. Tap “Use as calorie target” to load that number into the sliders so your macros solve to it.</dd>
+        <div class="faq__item">
+          <dt>How do I calculate my BMR and daily calorie target?</dt>
+          <dd>Use the Calorie Target Estimator. Enter your sex, age, weight, and height and it computes your BMR (basal metabolic rate) with the Mifflin-St Jeor formula, multiplies by an activity level to get maintenance calories (TDEE), and adjusts for a cut, maintain, or bulk goal. Tap “Use as calorie target” to load that number into the sliders so your macros solve to it.</dd>
+        </div>
 
-        <dt>What is BMR and how is it different from TDEE?</dt>
-        <dd>BMR (basal metabolic rate) is the energy your body burns at complete rest just to stay alive. TDEE (total daily energy expenditure) is your BMR multiplied by an activity factor, so it reflects movement and exercise too. TDEE, adjusted for your goal, is the calorie target to actually eat to.</dd>
+        <div class="faq__item">
+          <dt>What is BMR and how is it different from TDEE?</dt>
+          <dd>BMR (basal metabolic rate) is the energy your body burns at complete rest just to stay alive. TDEE (total daily energy expenditure) is your BMR multiplied by an activity factor, so it reflects movement and exercise too. TDEE, adjusted for your goal, is the calorie target to actually eat to.</dd>
+        </div>
 
-        <dt>How do I know if I'm in a calorie deficit or surplus?</dt>
-        <dd>The energy balance panel subtracts your calories burned (TDEE plus any logged exercise) from your calories eaten (the macro total). A negative result is a deficit, so you lose weight; a positive result is a surplus, so you gain. It also projects the weekly weight change using roughly 7700 kcal per kg (3500 per lb).</dd>
+        <div class="faq__item">
+          <dt>How do I know if I'm in a calorie deficit or surplus?</dt>
+          <dd>The energy balance panel subtracts your calories burned (TDEE plus any logged exercise) from your calories eaten (the macro total). A negative result is a deficit, so you lose weight; a positive result is a surplus, so you gain. It also projects the weekly weight change using roughly 7700 kcal per kg (3500 per lb).</dd>
+        </div>
 
-        <dt>How many calories does exercise burn?</dt>
-        <dd>Pick an activity and enter the minutes, and the calculator estimates the burn as MET × body weight in kg × hours. Running, cycling, swimming, weight training, HIIT, yoga, hiking, and brisk walking are built in. That burn is added to your expenditure for the deficit/surplus calculation.</dd>
+        <div class="faq__item">
+          <dt>How many calories does exercise burn?</dt>
+          <dd>Pick an activity and enter the minutes, and the calculator estimates the burn as MET × body weight in kg × hours. Running, cycling, swimming, weight training, HIIT, yoga, hiking, and brisk walking are built in. That burn is added to your expenditure for the deficit/surplus calculation.</dd>
+        </div>
 
-        <dt>How do I set protein based on body weight?</dt>
-        <dd>Use the protein target field. In metric it takes grams per kilogram (a common range is 1.6 to 2.2 g/kg); switch to imperial and it becomes grams per pound. Using the body weight you already entered, it computes total grams and sets the protein slider for you.</dd>
+        <div class="faq__item">
+          <dt>How do I set protein based on body weight?</dt>
+          <dd>Use the protein target field. In metric it takes grams per kilogram (a common range is 1.6 to 2.2 g/kg); switch to imperial and it becomes grams per pound. Using the body weight you already entered, it computes total grams and sets the protein slider for you.</dd>
+        </div>
 
-        <dt>Is this macro calculator free?</dt>
-        <dd>Yes. It is completely free with no sign-up, no ads, and no tracking. Everything runs in your browser and nothing you enter is sent to a server.</dd>
+        <div class="faq__item">
+          <dt>Is this macro calculator free?</dt>
+          <dd>Yes. It is completely free with no sign-up, no ads, and no tracking. Everything runs in your browser and nothing you enter is sent to a server.</dd>
+        </div>
 
-        <dt>Does it work on mobile?</dt>
-        <dd>Yes. It is built mobile-first with large touch targets and keeps working offline once the page has loaded.</dd>
+        <div class="faq__item">
+          <dt>Does it work on mobile?</dt>
+          <dd>Yes. It is built mobile-first with large touch targets and keeps working offline once the page has loaded.</dd>
+        </div>
       </dl>
 
       <p class="disclaimer">For general information only — not medical or dietary advice.</p>

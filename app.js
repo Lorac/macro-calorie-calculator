@@ -1,7 +1,7 @@
 import {
   calc, resolve, canPin, sanitizeGrams, sanitizeNumber, DEFAULT_STATE, MAX,
   bmrMifflin, tdee, applyGoal, lbToKg, kgToLb, ftInToCm, cmToFtIn,
-  exerciseKcal, weeklyWeightChange, dailyKcalForWeeklyChange, proteinFromBodyweight,
+  weeklyWeightChange, dailyKcalForWeeklyChange, proteinFromBodyweight,
 } from './calc.js';
 
 const STATE_KEY = 'macro-calc-state';
@@ -140,7 +140,7 @@ const BMR_KEY = 'macro-calc-bmr';
 const DEFAULT_BMR = {
   sex: 'male', units: 'metric', activity: 'moderate', goal: 'maintain',
   age: '', weight: '', height_cm: '', height_ft: '', height_in: '',
-  exercise: '', exerciseMin: '', proteinPerKg: '', gainRate: '0.25',
+  proteinPerKg: '', gainRate: '0.25',
 };
 const GOAL_NOTE = { cut: 'cut −20%', maintain: 'maintain' };
 
@@ -227,19 +227,8 @@ function renderBmr() {
     el('use-target').disabled = true;
   }
 
-  renderExercise();
   renderProteinApply();
   renderBalance();
-}
-
-// Calories burned by today's logged exercise (needs only weight + minutes).
-function exerciseBurn() {
-  const { weight_kg } = bmrMetric();
-  return exerciseKcal(bmr.exercise, weight_kg, bmr.exerciseMin);
-}
-
-function renderExercise() {
-  el('exercise-burn').textContent = `+${kcalFmt.format(exerciseBurn())} kcal`;
 }
 
 // Grams of protein the entered target implies. The ratio is per the selected
@@ -265,7 +254,7 @@ function renderProteinApply() {
   }
 }
 
-// Deficit/surplus: macro calories in vs TDEE + exercise out, plus weekly change.
+// Deficit/surplus: macro calories in vs TDEE out, plus weekly change.
 function renderBalance() {
   const intake = calc(state).calories;
   const section = el('balance');
@@ -282,7 +271,7 @@ function renderBalance() {
 
   const { weight_kg, height_cm } = bmrMetric();
   const b = bmrMifflin({ sex: bmr.sex, weight_kg, height_cm, age: bmr.age });
-  const expend = tdee(b, bmr.activity) + exerciseBurn();
+  const expend = tdee(b, bmr.activity);
   el('balance-out').textContent = kcalFmt.format(expend);
 
   const balance = intake - expend; // positive = surplus, negative = deficit
@@ -311,8 +300,6 @@ function fillBmrInputs() {
   el('bmr-height-cm').value = bmr.height_cm;
   el('bmr-height-ft').value = bmr.height_ft;
   el('bmr-height-in').value = bmr.height_in;
-  el('exercise-activity').value = bmr.exercise;
-  el('exercise-min').value = bmr.exerciseMin;
   el('protein-per-kg').value = bmr.proteinPerKg;
   el('gain-rate').value = bmr.gainRate;
 }
@@ -373,8 +360,6 @@ function wireBmr() {
   el('use-target').addEventListener('click', () => {
     if (currentTarget > 0) changeControl('calories', currentTarget);
   });
-  el('exercise-activity').addEventListener('change', (e) => setBmr('exercise', e.target.value));
-  el('exercise-min').addEventListener('input', (e) => setBmr('exerciseMin', e.target.value));
   el('protein-per-kg').addEventListener('input', (e) => setBmr('proteinPerKg', e.target.value));
   el('gain-rate').addEventListener('input', (e) => setBmr('gainRate', e.target.value));
   el('protein-apply').addEventListener('click', () => {
