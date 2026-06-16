@@ -1,7 +1,7 @@
 import {
   calc, resolve, canPin, sanitizeGrams, sanitizeNumber, DEFAULT_STATE, MAX,
-  bmrMifflin, tdee, applyGoal, lbToKg, kgToLb, ftInToCm, cmToFtIn,
-  weeklyWeightChange, dailyKcalForWeeklyChange, proteinFromBodyweight,
+  bmrMifflin, tdee, goalTarget, lbToKg, kgToLb, ftInToCm, cmToFtIn,
+  weeklyWeightChange, proteinFromBodyweight,
 } from './calc.js';
 
 const STATE_KEY = 'macro-calc-state';
@@ -140,9 +140,8 @@ const BMR_KEY = 'macro-calc-bmr';
 const DEFAULT_BMR = {
   sex: 'male', units: 'metric', activity: 'moderate', goal: 'maintain',
   age: '', weight: '', height_cm: '', height_ft: '', height_in: '',
-  proteinPerKg: '', gainRate: '0.25',
+  proteinPerKg: '', cutKcal: '250', bulkKcal: '250',
 };
-const GOAL_NOTE = { cut: 'cut −20%', maintain: 'maintain' };
 
 let bmr = loadBmr();
 
@@ -198,28 +197,38 @@ function renderBmr() {
   }
   el('bmr-activity').value = bmr.activity;
 
-  // Bulk is rate-driven: reveal the gain-rate field and label its unit.
+  // Cut & bulk are offset-driven: reveal the kcal slider and label it per goal.
   const massUnit = bmr.units === 'imperial' ? 'lb' : 'kg';
-  el('gain-field').hidden = bmr.goal !== 'bulk';
-  el('gain-unit').textContent = `${massUnit}/week`;
-  el('goal-note').textContent = bmr.goal === 'bulk'
-    ? `+${sanitizeNumber(bmr.gainRate)} ${massUnit}/wk`
-    : GOAL_NOTE[bmr.goal];
+  const offset = sanitizeNumber(goalOffset());
+  el('offset-field').hidden = bmr.goal === 'maintain';
+  el('offset-label').textContent = bmr.goal === 'cut' ? 'Daily deficit' : 'Daily surplus';
+  const slider = el('goal-offset');
+  slider.value = offset;
+  slider.style.setProperty('--val', offset / (slider.max || 1000) * 100);
+  slider.style.setProperty('--c', bmr.goal === 'cut' ? 'var(--protein)' : 'var(--fat)');
+  el('offset-val').textContent = `${bmr.goal === 'cut' ? '−' : '+'}${kcalFmt.format(offset)} kcal`;
+  el('goal-note').textContent = bmr.goal === 'maintain'
+    ? 'maintain'
+    : `${bmr.goal === 'cut' ? '−' : '+'}${kcalFmt.format(offset)} kcal/day`;
 
   // Outputs.
   if (bmrReady()) {
     const { weight_kg, height_cm } = bmrMetric();
     const b = bmrMifflin({ sex: bmr.sex, weight_kg, height_cm, age: bmr.age });
     const t = tdee(b, bmr.activity);
-    const target = bmr.goal === 'bulk'
-      ? t + dailyKcalForWeeklyChange(bmr.gainRate, bmr.units) // TDEE + chosen surplus
-      : applyGoal(t, bmr.goal); // cut ×0.8 / maintain ×1
+    const target = goalTarget(t, b, bmr.goal, offset);
     currentTarget = Math.round(target);
     el('bmr-value').textContent = kcalFmt.format(b);
     el('tdee-value').textContent = kcalFmt.format(t);
     el('target-value').textContent = kcalFmt.format(currentTarget);
+    // Weekly weight change implied by the actual (BMR-floored) target vs TDEE.
+    const weekly = weeklyWeightChange(target - t, bmr.units);
+    el('offset-rate').textContent = bmr.goal === 'maintain'
+      ? ''
+      : `≈ ${weekly >= 0 ? '+' : '−'}${Math.abs(weekly).toFixed(2)} ${massUnit}/week`;
     el('use-target').disabled = false;
   } else {
+    el('offset-rate').textContent = '';
     currentTarget = 0;
     el('bmr-value').textContent = '—';
     el('tdee-value').textContent = '—';
@@ -301,7 +310,11 @@ function fillBmrInputs() {
   el('bmr-height-ft').value = bmr.height_ft;
   el('bmr-height-in').value = bmr.height_in;
   el('protein-per-kg').value = bmr.proteinPerKg;
-  el('gain-rate').value = bmr.gainRate;
+}
+
+// The kcal offset for the active goal (cut/bulk each remember their own).
+function goalOffset() {
+  return bmr.goal === 'cut' ? bmr.cutKcal : bmr.bulkKcal;
 }
 
 function setBmr(key, value) {
@@ -322,14 +335,12 @@ function setUnits(units) {
     }
     // g/kg -> g/lb (same scalar as kg->lb weight) so the implied grams hold.
     bmr.proteinPerKg = ratioConv(bmr.proteinPerKg, LB_PER_KG);
-    bmr.gainRate = ratioConv(bmr.gainRate, 1 / LB_PER_KG); // kg/wk -> lb/wk (like weight)
   } else {
     bmr.weight = bmr.weight === '' ? '' : round1(lbToKg(bmr.weight));
     if (bmr.height_ft !== '' || bmr.height_in !== '') {
       bmr.height_cm = round1(ftInToCm(bmr.height_ft, bmr.height_in));
     }
     bmr.proteinPerKg = ratioConv(bmr.proteinPerKg, 1 / LB_PER_KG); // g/lb -> g/kg
-    bmr.gainRate = ratioConv(bmr.gainRate, LB_PER_KG); // lb/wk -> kg/wk
   }
   bmr.units = units;
   fillBmrInputs();
@@ -361,7 +372,9 @@ function wireBmr() {
     if (currentTarget > 0) changeControl('calories', currentTarget);
   });
   el('protein-per-kg').addEventListener('input', (e) => setBmr('proteinPerKg', e.target.value));
-  el('gain-rate').addEventListener('input', (e) => setBmr('gainRate', e.target.value));
+  el('goal-offset').addEventListener('input', (e) => {
+    setBmr(bmr.goal === 'cut' ? 'cutKcal' : 'bulkKcal', e.target.value);
+  });
   el('protein-apply').addEventListener('click', () => {
     const grams = proteinTargetGrams();
     if (grams > 0) changeControl('protein', grams); // moves the protein slider up top

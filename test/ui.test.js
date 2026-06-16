@@ -58,7 +58,7 @@ const fire = (win, elm, type) => elm.dispatchEvent(new win.Event(type, { bubbles
 const READY_BMR = {
   sex: 'male', units: 'metric', activity: 'moderate', goal: 'maintain',
   age: 30, weight: 80, height_cm: 180, height_ft: '', height_in: '',
-  exercise: '', exerciseMin: '', proteinPerKg: '',
+  proteinPerKg: '', cutKcal: '250', bulkKcal: '250',
 };
 
 test('default render populates the macro card from DEFAULT_STATE', async () => {
@@ -118,14 +118,22 @@ test('protein target switches to g/lb in imperial and stays equivalent', async (
   assert.ok(Math.abs(Number($(doc, 'protein-grams').value) - 144) <= 2);
 });
 
-test('bulk goal is rate-driven: gain field shows and target = TDEE + chosen surplus', async () => {
-  const { doc } = await load({ 'macro-calc-bmr': { ...READY_BMR, goal: 'bulk', gainRate: '0.25' } });
-  assert.equal($(doc, 'gain-field').hidden, false);
-  assert.match($(doc, 'gain-unit').textContent, /kg\/week/);
-  // BMR 1780 * 1.55 = 2759 TDEE; +275 (0.25 kg/wk) = 3034
-  const target = Number($(doc, 'target-value').textContent.replace(/[^0-9]/g, ''));
-  assert.ok(Math.abs(target - 3034) <= 2, `target ~3034, got ${target}`);
+test('cut & bulk are offset-driven: slider shows and target = TDEE ∓ offset', async () => {
+  const { doc } = await load({ 'macro-calc-bmr': { ...READY_BMR, goal: 'bulk', bulkKcal: '250' } });
+  // BMR 1780 × 1.55 = 2759 TDEE; +250 surplus = 3009
+  assert.equal($(doc, 'offset-field').hidden, false);
+  assert.match($(doc, 'offset-label').textContent, /surplus/i);
+  const bulkTarget = Number($(doc, 'target-value').textContent.replace(/[^0-9]/g, ''));
+  assert.ok(Math.abs(bulkTarget - 3009) <= 2, `bulk target ~3009, got ${bulkTarget}`);
 
-  $(doc, 'goal-maintain').click(); // non-bulk hides the rate field
-  assert.equal($(doc, 'gain-field').hidden, true);
+  $(doc, 'goal-maintain').click(); // maintain hides the slider, target = TDEE
+  assert.equal($(doc, 'offset-field').hidden, true);
+  const maintainTarget = Number($(doc, 'target-value').textContent.replace(/[^0-9]/g, ''));
+  assert.ok(Math.abs(maintainTarget - 2759) <= 2, `maintain target ~2759, got ${maintainTarget}`);
+
+  $(doc, 'goal-cut').click(); // cut subtracts the offset (cutKcal 250) -> 2509
+  assert.equal($(doc, 'offset-field').hidden, false);
+  assert.match($(doc, 'offset-label').textContent, /deficit/i);
+  const cutTarget = Number($(doc, 'target-value').textContent.replace(/[^0-9]/g, ''));
+  assert.ok(Math.abs(cutTarget - 2509) <= 2, `cut target ~2509, got ${cutTarget}`);
 });

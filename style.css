@@ -502,7 +502,7 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
   cursor: not-allowed;
 }
 
-/* Exercise + protein-target rows */
+/* Protein-target row (a label + input/button row layout) */
 .field__hint {
   font-weight: 600;
   font-size: 0.66rem;
@@ -510,7 +510,6 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
   letter-spacing: 0;
   opacity: 0.7;
 }
-.field--exercise .field__hint { opacity: 1; font-weight: 800; }
 .exercise-row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -532,6 +531,22 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
 .exercise-row input[type="number"] { width: 4.5rem; }
 .field--protein-bw .exercise-row { grid-template-columns: 1fr auto; }
 .field--protein-bw input[type="number"] { width: 100%; }
+
+/* Cut/bulk calorie-offset slider row */
+.field--offset .field__name { display: flex; justify-content: space-between; gap: 0.5rem; }
+.offset-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.7rem;
+  align-items: center;
+}
+.offset-row input[type="range"] { grid-area: auto; width: 100%; }
+.offset-val {
+  font-weight: 800;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 
 .apply-btn {
   background: var(--protein);
@@ -670,8 +685,11 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
   .label--bmr .units { margin-top: 0.6rem; }
   .label--bmr .bmr-grid { gap: 0.3rem 0.7rem; padding: 0.55rem 0 0.25rem; }
   .label--bmr .field { padding-top: 0.35rem; }
-  /* Activity / Exercise / Protein / Goal no longer each claim a full row. */
+  /* Activity and Protein pair up 2-per-row instead of each claiming a full row;
+     Goal (and the cut/bulk offset slider it reveals) stay full-width below them. */
   .label--bmr .field--wide { grid-column: auto; }
+  .label--bmr .field--goal,
+  .label--bmr .field--offset { grid-column: 1 / -1; }
   .label--bmr .bmr-out { margin-top: 0.5rem; }
   .label--bmr .bmr-stat { padding: 0.45rem 0.5rem 0.5rem; }
   .label--bmr .use-target { margin-top: 0.5rem; padding: 0.6rem; }

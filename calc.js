@@ -17,9 +17,6 @@ export const ACTIVITY = {
   very_active: 1.9,
 };
 
-// Goal multipliers applied to TDEE to get a daily target.
-export const GOAL = { cut: 0.8, maintain: 1, bulk: 1.15 };
-
 // Unit conversions (metric is the internal source of truth).
 export function lbToKg(lb) {
   return sanitizeNumber(lb) * 0.45359237;
@@ -51,9 +48,15 @@ export function tdee(bmr, activityKey) {
   return sanitizeNumber(bmr) * (ACTIVITY[activityKey] ?? ACTIVITY.sedentary);
 }
 
-// Goal-adjusted daily target = TDEE × goal multiplier (unknown key → maintain).
-export function applyGoal(tdeeValue, goalKey) {
-  return sanitizeNumber(tdeeValue) * (GOAL[goalKey] ?? GOAL.maintain);
+// Goal-adjusted daily target from a direct calorie offset: cut subtracts the
+// offset, bulk adds it, maintain ignores it. A cut never prescribes below BMR
+// (resting needs), so the result is floored there. Unknown goal → maintain.
+export function goalTarget(tdeeValue, bmrValue, goalKey, offsetKcal) {
+  const t = sanitizeNumber(tdeeValue);
+  const offset = sanitizeNumber(offsetKcal);
+  if (goalKey === 'cut') return Math.max(sanitizeNumber(bmrValue), t - offset);
+  if (goalKey === 'bulk') return t + offset;
+  return t;
 }
 
 // --- Physical activity + energy balance -------------------------------------
@@ -76,14 +79,6 @@ export function weeklyWeightChange(dailyBalanceKcal, units) {
   if (!Number.isFinite(n)) return 0;
   const perUnit = units === 'imperial' ? KCAL_PER_LB : KCAL_PER_KG;
   return (n * 7) / perUnit;
-}
-
-// Inverse of weeklyWeightChange: the daily calorie surplus/deficit needed to
-// gain/lose `weeklyRate` units of body mass per week. e.g. 0.25 kg/week ->
-// 0.25*7700/7 = 275 kcal/day. Used to turn a chosen bulk rate into a target.
-export function dailyKcalForWeeklyChange(weeklyRate, units) {
-  const perUnit = units === 'imperial' ? KCAL_PER_LB : KCAL_PER_KG;
-  return (sanitizeNumber(weeklyRate) * perUnit) / 7;
 }
 
 // Number of binding constraints implied by the pins (pins has exactly the four

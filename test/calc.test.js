@@ -7,7 +7,6 @@ import {
   MAX,
   DEFAULT_STATE,
   ACTIVITY,
-  GOAL,
   calc,
   scaleToCalories,
   constraintCount,
@@ -15,15 +14,12 @@ import {
   resolve,
   bmrMifflin,
   tdee,
-  applyGoal,
+  goalTarget,
   lbToKg,
   kgToLb,
   ftInToCm,
   cmToFtIn,
-  MET,
-  exerciseKcal,
   weeklyWeightChange,
-  dailyKcalForWeeklyChange,
   proteinFromBodyweight,
   KCAL_PER_KG,
   KCAL_PER_LB,
@@ -65,25 +61,18 @@ test('tdee multiplies BMR by the activity factor, unknown key -> sedentary', () 
   assert.equal(tdee(2000, 'nonsense'), 2000 * ACTIVITY.sedentary);
 });
 
-test('applyGoal multiplies TDEE by the goal factor, unknown key -> maintain', () => {
-  assert.equal(applyGoal(2500, 'cut'), 2500 * GOAL.cut);
-  assert.equal(applyGoal(2500, 'bulk'), 2500 * GOAL.bulk);
-  assert.equal(applyGoal(2500, 'nonsense'), 2500);
+test('goalTarget applies a kcal offset: cut subtracts, bulk adds, maintain ignores', () => {
+  assert.equal(goalTarget(2500, 1500, 'cut', 250), 2250); // TDEE − offset
+  assert.equal(goalTarget(2500, 1500, 'bulk', 250), 2750); // TDEE + offset
+  assert.equal(goalTarget(2500, 1500, 'maintain', 250), 2500); // offset ignored
+  assert.equal(goalTarget(2500, 1500, 'nonsense', 250), 2500); // unknown -> maintain
 });
 
-test('exerciseKcal = MET * kg * hours, unknown/empty activity -> 0', () => {
-  // running 30 min at 80kg: 9.8 * 80 * 0.5 = 392
-  assert.ok(approx(exerciseKcal('running', 80, 30), 392));
-  assert.equal(exerciseKcal('running', 80, 0), 0);
-  assert.equal(exerciseKcal('', 80, 30), 0); // no activity selected
-  assert.equal(exerciseKcal('nonsense', 80, 30), 0);
-  assert.equal(exerciseKcal('walking', 'abc', 30), 0); // invalid weight sanitized
-});
-
-test('MET table has positive values for every listed activity', () => {
-  for (const [k, v] of Object.entries(MET)) {
-    assert.ok(v > 0, `${k} should have a positive MET`);
-  }
+test('goalTarget floors a cut at BMR (never prescribes below resting needs)', () => {
+  // TDEE 2000, BMR 1600, a 600 deficit would land at 1400 -> clamped to 1600
+  assert.equal(goalTarget(2000, 1600, 'cut', 600), 1600);
+  // a modest deficit that stays above BMR is untouched
+  assert.equal(goalTarget(2000, 1600, 'cut', 200), 1800);
 });
 
 test('weeklyWeightChange projects a daily balance over a week, signed', () => {
@@ -94,14 +83,6 @@ test('weeklyWeightChange projects a daily balance over a week, signed', () => {
   assert.ok(approx(weeklyWeightChange(500, 'imperial'), 1));
   assert.ok(approx(weeklyWeightChange(500, 'imperial') * KCAL_PER_LB, 3500));
   assert.equal(weeklyWeightChange(NaN, 'metric'), 0);
-});
-
-test('dailyKcalForWeeklyChange inverts weeklyWeightChange', () => {
-  assert.ok(approx(dailyKcalForWeeklyChange(0.25, 'metric'), 275)); // 0.25*7700/7
-  assert.ok(approx(dailyKcalForWeeklyChange(0.5, 'imperial'), 250)); // 0.5*3500/7
-  assert.equal(dailyKcalForWeeklyChange('abc', 'metric'), 0);
-  // round-trips with weeklyWeightChange
-  assert.ok(approx(weeklyWeightChange(dailyKcalForWeeklyChange(0.4, 'metric'), 'metric'), 0.4));
 });
 
 test('proteinFromBodyweight multiplies g/kg target by body weight', () => {
