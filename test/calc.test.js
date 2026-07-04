@@ -175,7 +175,11 @@ test('energyProfile converts imperial inputs and reports lb/week', () => {
 
 test('energyProfile is not ready until weight, height, and age are entered', () => {
   const p = energyProfile({ ...METRIC_PROFILE, age: '', goal: 'cut' });
-  assert.deepEqual(p, { ready: false, offset: 250, bmr: 0, tdee: 0, target: 0, weeklyChange: 0 });
+  assert.equal(p.ready, false);
+  assert.deepEqual(
+    { offset: p.offset, bmr: p.bmr, tdee: p.tdee, target: p.target, weeklyChange: p.weeklyChange },
+    { offset: 250, bmr: 0, tdee: 0, target: 0, weeklyChange: 0 },
+  );
 });
 
 test('constraintCount counts pinned macros plus calories', () => {

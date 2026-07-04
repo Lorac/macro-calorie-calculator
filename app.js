@@ -3,6 +3,7 @@ import {
   energyProfile, kgToLb, lbToKg, ftInToCm, cmToFtIn,
   weeklyWeightChange, proteinFromBodyweight,
 } from './calc.js';
+import { simulateWeightTrajectory } from './hall.js';
 
 const STATE_KEY = 'macro-calc-state';
 const PINS_KEY = 'macro-calc-pins';
@@ -231,9 +232,10 @@ function renderProteinApply() {
   }
 }
 
-// Deficit/surplus: macro calories in vs TDEE out, plus weekly change.
+// Deficit/surplus: macro calories in vs TDEE out, plus weight trajectory.
 function renderBalance() {
-  const intake = calc(state).calories;
+  const macros = calc(state);
+  const intake = macros.calories;
   const section = el('balance');
   section.classList.remove('balance--deficit', 'balance--surplus');
   el('balance-in').textContent = kcalFmt.format(intake);
@@ -244,6 +246,7 @@ function renderBalance() {
     el('balance-verdict').textContent = 'Enter your stats above';
     el('balance-delta').textContent = '—';
     el('balance-weight').textContent = '';
+    renderTrajectory(profile, intake, macros.kcal.carb);
     return;
   }
 
@@ -257,6 +260,7 @@ function renderBalance() {
     el('balance-verdict').textContent = 'Maintenance';
     el('balance-delta').textContent = '±0 kcal';
     el('balance-weight').textContent = 'weight stable';
+    renderTrajectory(profile, intake, macros.kcal.carb);
     return;
   }
 
@@ -266,6 +270,50 @@ function renderBalance() {
   el('balance-verdict').textContent = deficit ? 'Deficit · losing' : 'Surplus · gaining';
   el('balance-delta').textContent = `${deficit ? '−' : '+'}${kcalFmt.format(absKcal)} kcal`;
   el('balance-weight').textContent = `≈ ${deficit ? '−' : '+'}${weekly.toFixed(2)} ${unit}/week`;
+  renderTrajectory(profile, intake, macros.kcal.carb);
+}
+
+// Hall/Forbes weight projection, shown as a milestone table out to the plateau.
+// Driven by the actual macro intake (so it reacts to what you compose) and the
+// body stats from the BMR card. Hidden until the stats are entered.
+const MILESTONES = [
+  { day: 30, label: '1 month' },
+  { day: 91, label: '3 months' },
+  { day: 182, label: '6 months' },
+  { day: 365, label: '1 year' },
+  { day: 1095, label: 'Plateau (est.)' },
+];
+
+function renderTrajectory(profile, intakeKcal, carbKcal) {
+  const box = el('trajectory');
+  const traj = profile.ready
+    ? simulateWeightTrajectory({
+        sex: bmr.sex, weight_kg: profile.weight_kg, height_cm: profile.height_cm,
+        age: bmr.age, activityKey: bmr.activity, intakeKcal, carbKcal,
+      }, 1095)
+    : [];
+
+  if (traj.length < 2) {
+    box.hidden = true;
+    el('trajectory-rows').innerHTML = '';
+    return;
+  }
+  box.hidden = false;
+
+  const imperial = bmr.units === 'imperial';
+  const unit = imperial ? 'lb' : 'kg';
+  const disp = (kg) => (imperial ? kgToLb(kg) : kg);
+  const start = disp(traj[0].weightKg);
+
+  el('trajectory-rows').innerHTML = MILESTONES.map(({ day, label }) => {
+    const w = disp(traj[day].weightKg); // traj index == day (0..1095)
+    const d = w - start;
+    const sign = d > 0.05 ? '+' : d < -0.05 ? '−' : '±';
+    const cls = d < -0.05 ? 'traj-loss' : d > 0.05 ? 'traj-gain' : 'traj-flat';
+    return `<tr><th scope="row">${label}</th>`
+      + `<td>${w.toFixed(1)} ${unit}</td>`
+      + `<td class="${cls}">${sign}${Math.abs(d).toFixed(1)}</td></tr>`;
+  }).join('');
 }
 
 // Write the field inputs from state (used on load + unit switches).

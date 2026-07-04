@@ -92,12 +92,15 @@ export function energyProfile(s) {
   const weight_kg = imperial ? lbToKg(s.weight) : sanitizeNumber(s.weight);
   const height_cm = imperial ? ftInToCm(s.height_ft, s.height_in) : sanitizeNumber(s.height_cm);
   const ready = weight_kg > 0 && height_cm > 0 && sanitizeNumber(s.age) > 0;
-  if (!ready) return { ready, offset, bmr: 0, tdee: 0, target: 0, weeklyChange: 0 };
+  if (!ready) return { ready, offset, bmr: 0, tdee: 0, target: 0, weeklyChange: 0, weight_kg, height_cm };
 
   const bmr = bmrMifflin({ sex: s.sex, weight_kg, height_cm, age: s.age });
   const t = tdee(bmr, s.activity);
   const target = goalTarget(t, bmr, s.goal, offset);
-  return { ready, offset, bmr, tdee: t, target, weeklyChange: weeklyWeightChange(target - t, s.units) };
+  return {
+    ready, offset, bmr, tdee: t, target, weight_kg, height_cm,
+    weeklyChange: weeklyWeightChange(target - t, s.units),
+  };
 }
 
 // Number of binding constraints implied by the pins (pins has exactly the four

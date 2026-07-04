@@ -623,6 +623,64 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
 .balance--surplus .balance__verdict,
 .balance--surplus .balance__delta { color: var(--fat); }
 
+.trajectory {
+  padding: 1rem 0.9rem 0.9rem;
+  border-top: 2px solid var(--ink);
+}
+.trajectory__title {
+  margin: 0 0 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.75;
+}
+.trajectory__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.trajectory__table th[scope="col"] {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.5;
+  text-align: right;
+  padding: 0 0 0.5rem;
+}
+.trajectory__table th[scope="col"]:first-child { text-align: left; }
+.trajectory__table th[scope="row"] {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.trajectory__table td {
+  text-align: right;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.5rem 0;
+}
+.trajectory__table tbody tr + tr th,
+.trajectory__table tbody tr + tr td {
+  border-top: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+}
+.trajectory__table tr:last-child th,
+.trajectory__table tr:last-child td {
+  font-weight: 900;
+  padding-top: 0.6rem;
+  border-top: 1.5px solid color-mix(in srgb, var(--ink) 25%, transparent);
+}
+.traj-loss { color: var(--protein); }
+.traj-gain { color: var(--fat); }
+.traj-flat { opacity: 0.5; }
+.trajectory__foot {
+  margin: 0.85rem 0 0;
+  font-size: 0.68rem;
+  opacity: 0.5;
+  text-align: center;
+}
+
 @media (max-width: 520px), (pointer: coarse) {
   .unit-tab, .seg__btn { min-height: 44px; }
   select#bmr-activity, .exercise-row select, .apply-btn { min-height: 44px; }
@@ -697,6 +755,7 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
   .label--bmr .balance__head { padding: 0.4rem 0.7rem; }
   .label--bmr .balance__io { padding: 0.5rem 0.7rem; }
   .label--bmr .balance__result { padding: 0.5rem 0.7rem; }
+  .label--bmr .trajectory { padding: 0.9rem 0.7rem; }
   .label--bmr .disclaimer { margin-top: 0.55rem; }
 
   /* Keep prose to a readable measure, then flow the FAQ across two columns so

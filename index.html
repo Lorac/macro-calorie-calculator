@@ -305,6 +305,16 @@
           <span class="balance__delta" id="balance-delta">—</span>
           <span class="balance__weight" id="balance-weight"></span>
         </div>
+        <div class="trajectory" id="trajectory" hidden>
+          <p class="trajectory__title">Projected weight</p>
+          <table class="trajectory__table">
+            <thead>
+              <tr><th scope="col">When</th><th scope="col">Weight</th><th scope="col">Change</th></tr>
+            </thead>
+            <tbody id="trajectory-rows"></tbody>
+          </table>
+          <p class="trajectory__foot">Hall dynamic model — loss slows as you go</p>
+        </div>
       </section>
 
       <p class="disclaimer">Mifflin-St Jeor estimate — a starting point, not medical advice.</p>
