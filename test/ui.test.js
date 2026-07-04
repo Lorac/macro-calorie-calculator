@@ -118,6 +118,15 @@ test('protein target switches to g/lb in imperial and stays equivalent', async (
   assert.ok(Math.abs(Number($(doc, 'protein-grams').value) - 144) <= 2);
 });
 
+test('pagehide flushes pending edits to localStorage before the debounce fires', async () => {
+  const { win, doc } = await load({ 'macro-calc-bmr': READY_BMR });
+  const age = $(doc, 'bmr-age');
+  age.value = '42';
+  fire(win, age, 'input'); // saved after 200ms normally
+  win.dispatchEvent(new win.Event('pagehide')); // ...but a dying page can't wait
+  assert.equal(JSON.parse(win.localStorage.getItem('macro-calc-bmr')).age, '42');
+});
+
 test('cut & bulk are offset-driven: slider shows and target = TDEE ∓ offset', async () => {
   const { doc } = await load({ 'macro-calc-bmr': { ...READY_BMR, goal: 'bulk', bulkKcal: '250' } });
   // BMR 1780 × 1.55 = 2759 TDEE; +250 surplus = 3009

@@ -1,6 +1,6 @@
 import {
-  calc, resolve, canPin, sanitizeGrams, sanitizeNumber, DEFAULT_STATE, MAX,
-  bmrMifflin, tdee, goalTarget, lbToKg, kgToLb, ftInToCm, cmToFtIn,
+  calc, resolve, canPin, constraintCount, sanitizeNumber, DEFAULT_STATE, MAX,
+  energyProfile, kgToLb, lbToKg, ftInToCm, cmToFtIn,
   weeklyWeightChange, proteinFromBodyweight,
 } from './calc.js';
 
@@ -17,37 +17,13 @@ const el = (id) => document.getElementById(id);
 // exists. No-op until then so the initial wire()/render() can't hit a TDZ.
 let renderBalanceHook = () => {};
 
-let state = loadState();
-let pins = loadPins();
-
-function loadState() {
+// Parse a persisted JSON value through its sanitizer; any parse/storage error
+// sanitizes null (-> the store's default).
+function loadJson(key, sanitize) {
   try {
-    const p = JSON.parse(localStorage.getItem(STATE_KEY) ?? 'null');
-    if (!p) return structuredClone(DEFAULT_STATE);
-    return {
-      protein_g: sanitizeGrams(p.protein_g),
-      carb_g: sanitizeGrams(p.carb_g),
-      fat_g: sanitizeGrams(p.fat_g),
-    };
+    return sanitize(JSON.parse(localStorage.getItem(key) ?? 'null'));
   } catch {
-    return structuredClone(DEFAULT_STATE);
-  }
-}
-
-function loadPins() {
-  try {
-    const p = JSON.parse(localStorage.getItem(PINS_KEY) ?? 'null');
-    if (!p) return structuredClone(NO_PINS);
-    const loaded = {
-      protein: Boolean(p.protein),
-      carb: Boolean(p.carb),
-      fat: Boolean(p.fat),
-      calories: Boolean(p.calories),
-    };
-    const count = Object.values(loaded).filter(Boolean).length;
-    return count <= 2 ? loaded : structuredClone(NO_PINS);
-  } catch {
-    return structuredClone(NO_PINS);
+    return sanitize(null);
   }
 }
 
@@ -58,6 +34,43 @@ function save(key, value) {
     /* ignore storage errors (private mode, quota) */
   }
 }
+
+// Debounced saves with a shared flush: mobile tabs are often killed straight
+// from hidden without pagehide, so every store flushes on BOTH signals or the
+// last ~200ms of edits can be lost.
+const flushers = [];
+function saverFor(key, get) {
+  let timer = 0;
+  flushers.push(() => { clearTimeout(timer); save(key, get()); });
+  return () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => save(key, get()), 200);
+  };
+}
+function flushAll() { for (const f of flushers) f(); }
+addEventListener('pagehide', flushAll);
+addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') flushAll();
+});
+
+let state = loadJson(STATE_KEY, (p) => (p ? {
+  protein_g: sanitizeNumber(p.protein_g),
+  carb_g: sanitizeNumber(p.carb_g),
+  fat_g: sanitizeNumber(p.fat_g),
+} : structuredClone(DEFAULT_STATE)));
+
+let pins = loadJson(PINS_KEY, (p) => {
+  if (!p) return structuredClone(NO_PINS);
+  const loaded = {
+    protein: Boolean(p.protein),
+    carb: Boolean(p.carb),
+    fat: Boolean(p.fat),
+    calories: Boolean(p.calories),
+  };
+  return constraintCount(loaded) <= 2 ? loaded : structuredClone(NO_PINS);
+});
+
+const saveStateSoon = saverFor(STATE_KEY, () => state);
 
 const inputFor = (control) => (control === 'calories' ? el('calories') : el(`${control}-grams`));
 
@@ -96,17 +109,6 @@ function render() {
   renderBalanceHook(); // keep the deficit/surplus panel in sync with intake
 }
 
-let stateSaveTimer = 0;
-function saveStateSoon() {
-  clearTimeout(stateSaveTimer);
-  stateSaveTimer = setTimeout(() => save(STATE_KEY, state), 200);
-}
-// Persist the latest state if the page is hidden/closed before the debounce fires.
-addEventListener('pagehide', () => { clearTimeout(stateSaveTimer); save(STATE_KEY, state); });
-addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') { clearTimeout(stateSaveTimer); save(STATE_KEY, state); }
-});
-
 function changeControl(control, value) {
   state = resolve(state, pins, control, value);
   saveStateSoon();
@@ -143,41 +145,11 @@ const DEFAULT_BMR = {
   proteinPerKg: '', cutKcal: '250', bulkKcal: '250',
 };
 
-let bmr = loadBmr();
+let bmr = loadJson(BMR_KEY, (p) => ((p && typeof p === 'object')
+  ? { ...structuredClone(DEFAULT_BMR), ...p }
+  : structuredClone(DEFAULT_BMR)));
 
-function loadBmr() {
-  try {
-    const p = JSON.parse(localStorage.getItem(BMR_KEY) ?? 'null');
-    if (!p || typeof p !== 'object') return structuredClone(DEFAULT_BMR);
-    return { ...structuredClone(DEFAULT_BMR), ...p };
-  } catch {
-    return structuredClone(DEFAULT_BMR);
-  }
-}
-
-let bmrSaveTimer = 0;
-function saveBmrSoon() {
-  clearTimeout(bmrSaveTimer);
-  bmrSaveTimer = setTimeout(() => save(BMR_KEY, bmr), 200);
-}
-addEventListener('pagehide', () => { clearTimeout(bmrSaveTimer); save(BMR_KEY, bmr); });
-
-// Convert the raw input fields (in the user's chosen units) to metric kg/cm.
-function bmrMetric() {
-  if (bmr.units === 'imperial') {
-    return {
-      weight_kg: lbToKg(bmr.weight),
-      height_cm: ftInToCm(bmr.height_ft, bmr.height_in),
-    };
-  }
-  return { weight_kg: sanitizeNumber(bmr.weight), height_cm: sanitizeNumber(bmr.height_cm) };
-}
-
-// A BMR estimate is "ready" only once weight, height, and age are all entered.
-function bmrReady() {
-  const { weight_kg, height_cm } = bmrMetric();
-  return weight_kg > 0 && height_cm > 0 && sanitizeNumber(bmr.age) > 0;
-}
+const saveBmrSoon = saverFor(BMR_KEY, () => bmr);
 
 let currentTarget = 0;
 
@@ -199,7 +171,8 @@ function renderBmr() {
 
   // Cut & bulk are offset-driven: reveal the kcal slider and label it per goal.
   const massUnit = bmr.units === 'imperial' ? 'lb' : 'kg';
-  const offset = sanitizeNumber(goalOffset());
+  const profile = energyProfile(bmr);
+  const offset = profile.offset;
   el('offset-field').hidden = bmr.goal === 'maintain';
   el('offset-label').textContent = bmr.goal === 'cut' ? 'Daily deficit' : 'Daily surplus';
   const slider = el('goal-offset');
@@ -212,20 +185,15 @@ function renderBmr() {
     : `${bmr.goal === 'cut' ? '−' : '+'}${kcalFmt.format(offset)} kcal/day`;
 
   // Outputs.
-  if (bmrReady()) {
-    const { weight_kg, height_cm } = bmrMetric();
-    const b = bmrMifflin({ sex: bmr.sex, weight_kg, height_cm, age: bmr.age });
-    const t = tdee(b, bmr.activity);
-    const target = goalTarget(t, b, bmr.goal, offset);
-    currentTarget = Math.round(target);
-    el('bmr-value').textContent = kcalFmt.format(b);
-    el('tdee-value').textContent = kcalFmt.format(t);
+  if (profile.ready) {
+    currentTarget = Math.round(profile.target);
+    el('bmr-value').textContent = kcalFmt.format(profile.bmr);
+    el('tdee-value').textContent = kcalFmt.format(profile.tdee);
     el('target-value').textContent = kcalFmt.format(currentTarget);
     // Weekly weight change implied by the actual (BMR-floored) target vs TDEE.
-    const weekly = weeklyWeightChange(target - t, bmr.units);
     el('offset-rate').textContent = bmr.goal === 'maintain'
       ? ''
-      : `≈ ${weekly >= 0 ? '+' : '−'}${Math.abs(weekly).toFixed(2)} ${massUnit}/week`;
+      : `≈ ${profile.weeklyChange >= 0 ? '+' : '−'}${Math.abs(profile.weeklyChange).toFixed(2)} ${massUnit}/week`;
     el('use-target').disabled = false;
   } else {
     el('offset-rate').textContent = '';
@@ -270,7 +238,8 @@ function renderBalance() {
   section.classList.remove('balance--deficit', 'balance--surplus');
   el('balance-in').textContent = kcalFmt.format(intake);
 
-  if (!bmrReady()) {
+  const profile = energyProfile(bmr);
+  if (!profile.ready) {
     el('balance-out').textContent = '—';
     el('balance-verdict').textContent = 'Enter your stats above';
     el('balance-delta').textContent = '—';
@@ -278,12 +247,9 @@ function renderBalance() {
     return;
   }
 
-  const { weight_kg, height_cm } = bmrMetric();
-  const b = bmrMifflin({ sex: bmr.sex, weight_kg, height_cm, age: bmr.age });
-  const expend = tdee(b, bmr.activity);
-  el('balance-out').textContent = kcalFmt.format(expend);
+  el('balance-out').textContent = kcalFmt.format(profile.tdee);
 
-  const balance = intake - expend; // positive = surplus, negative = deficit
+  const balance = intake - profile.tdee; // positive = surplus, negative = deficit
   const absKcal = Math.round(Math.abs(balance));
   const unit = bmr.units === 'imperial' ? 'lb' : 'kg';
 
@@ -310,11 +276,6 @@ function fillBmrInputs() {
   el('bmr-height-ft').value = bmr.height_ft;
   el('bmr-height-in').value = bmr.height_in;
   el('protein-per-kg').value = bmr.proteinPerKg;
-}
-
-// The kcal offset for the active goal (cut/bulk each remember their own).
-function goalOffset() {
-  return bmr.goal === 'cut' ? bmr.cutKcal : bmr.bulkKcal;
 }
 
 function setBmr(key, value) {
@@ -385,3 +346,8 @@ function wireBmr() {
 }
 
 wireBmr();
+
+// Offline support (globalThis: node tests import this module without a navigator).
+globalThis.navigator?.serviceWorker?.register('sw.js')?.catch(() => {
+  /* e.g. file:// — the app works without it */
+});

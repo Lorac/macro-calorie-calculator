@@ -81,6 +81,25 @@ export function weeklyWeightChange(dailyBalanceKcal, units) {
   return (n * 7) / perUnit;
 }
 
+// Everything the calculator derives from the raw estimator state (units-aware):
+// metric body stats -> BMR -> TDEE -> goal target -> implied weekly change.
+// `ready` is false until weight, height, and age are all entered; the numeric
+// outputs are 0 until then. `offset` (the active cut/bulk kcal) is always
+// reported so the UI can show the slider before the stats are complete.
+export function energyProfile(s) {
+  const offset = sanitizeNumber(s.goal === 'cut' ? s.cutKcal : s.bulkKcal);
+  const imperial = s.units === 'imperial';
+  const weight_kg = imperial ? lbToKg(s.weight) : sanitizeNumber(s.weight);
+  const height_cm = imperial ? ftInToCm(s.height_ft, s.height_in) : sanitizeNumber(s.height_cm);
+  const ready = weight_kg > 0 && height_cm > 0 && sanitizeNumber(s.age) > 0;
+  if (!ready) return { ready, offset, bmr: 0, tdee: 0, target: 0, weeklyChange: 0 };
+
+  const bmr = bmrMifflin({ sex: s.sex, weight_kg, height_cm, age: s.age });
+  const t = tdee(bmr, s.activity);
+  const target = goalTarget(t, bmr, s.goal, offset);
+  return { ready, offset, bmr, tdee: t, target, weeklyChange: weeklyWeightChange(target - t, s.units) };
+}
+
 // Number of binding constraints implied by the pins (pins has exactly the four
 // boolean keys protein/carb/fat/calories, so counting the true ones is enough).
 export function constraintCount(pins) {
@@ -101,14 +120,11 @@ export function sanitizeNumber(value) {
   return n;
 }
 
-// Back-compat alias: grams are just a non-negative finite number.
-export const sanitizeGrams = sanitizeNumber;
-
 // Derive calories, per-macro kcal, and percentage split from grams.
 export function calc(state) {
-  const protein_g = sanitizeGrams(state.protein_g);
-  const carb_g = sanitizeGrams(state.carb_g);
-  const fat_g = sanitizeGrams(state.fat_g);
+  const protein_g = sanitizeNumber(state.protein_g);
+  const carb_g = sanitizeNumber(state.carb_g);
+  const fat_g = sanitizeNumber(state.fat_g);
 
   const kcal = {
     protein: protein_g * ENERGY.protein,
@@ -141,20 +157,20 @@ function gramState(s) {
 }
 
 function macroCal(state, m) {
-  return ENERGY[m] * sanitizeGrams(state[gk(m)]);
+  return ENERGY[m] * sanitizeNumber(state[gk(m)]);
 }
 
 function sanitizeState(s) {
   return {
-    protein_g: sanitizeGrams(s.protein_g),
-    carb_g: sanitizeGrams(s.carb_g),
-    fat_g: sanitizeGrams(s.fat_g),
+    protein_g: sanitizeNumber(s.protein_g),
+    carb_g: sanitizeNumber(s.carb_g),
+    fat_g: sanitizeNumber(s.fat_g),
   };
 }
 
 function resolveMacro(state, pins, M, value) {
   const out = sanitizeState(state);
-  const newVal = sanitizeGrams(value);
+  const newVal = sanitizeNumber(value);
 
   if (!pins.calories) {
     out[gk(M)] = newVal;
@@ -187,14 +203,14 @@ function resolveMacro(state, pins, M, value) {
     for (const m of others) out[gk(m)] = each / ENERGY[m];
   } else {
     const factor = targetOthersCal / currentOthersCal;
-    for (const m of others) out[gk(m)] = sanitizeGrams(state[gk(m)]) * factor;
+    for (const m of others) out[gk(m)] = sanitizeNumber(state[gk(m)]) * factor;
   }
   return gramState(out);
 }
 
 function resolveCalories(state, pins, value) {
   const out = sanitizeState(state);
-  const T = sanitizeGrams(value);
+  const T = sanitizeNumber(value);
   const unpinned = MACRO_KEYS.filter((m) => !pins[m]);
   if (unpinned.length === 0) return gramState(out);
 
@@ -215,7 +231,7 @@ function resolveCalories(state, pins, value) {
     for (const m of unpinned) out[gk(m)] = each / ENERGY[m];
   } else {
     const factor = targetUnpinnedCal / currentUnpinnedCal;
-    for (const m of unpinned) out[gk(m)] = sanitizeGrams(state[gk(m)]) * factor;
+    for (const m of unpinned) out[gk(m)] = sanitizeNumber(state[gk(m)]) * factor;
   }
   return gramState(out);
 }
@@ -225,14 +241,4 @@ function resolveCalories(state, pins, value) {
 export function resolve(state, pins, control, value) {
   if (control === 'calories') return resolveCalories(state, pins, value);
   return resolveMacro(state, pins, control, value);
-}
-
-// Back-compat: scale all macros to a target with no pins.
-export function scaleToCalories(state, targetCalories) {
-  return resolve(
-    state,
-    { protein: false, carb: false, fat: false, calories: false },
-    'calories',
-    targetCalories,
-  );
 }

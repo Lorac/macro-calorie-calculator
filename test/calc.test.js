@@ -1,14 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  sanitizeGrams,
   sanitizeNumber,
   ENERGY,
   MAX,
   DEFAULT_STATE,
   ACTIVITY,
   calc,
-  scaleToCalories,
+  energyProfile,
   constraintCount,
   canPin,
   resolve,
@@ -25,20 +24,13 @@ import {
   KCAL_PER_LB,
 } from '../calc.js';
 
-test('sanitizeGrams coerces invalid input to 0 and passes valid numbers', () => {
-  assert.equal(sanitizeGrams(-5), 0);
-  assert.equal(sanitizeGrams('abc'), 0);
-  assert.equal(sanitizeGrams(NaN), 0);
-  assert.equal(sanitizeGrams(null), 0);
-  assert.equal(sanitizeGrams('150'), 150);
-  assert.equal(sanitizeGrams(150), 150);
-});
-
-test('sanitizeNumber is the shared coercion (sanitizeGrams is its alias)', () => {
+test('sanitizeNumber coerces invalid input to 0 and passes valid numbers', () => {
   assert.equal(sanitizeNumber(-5), 0);
   assert.equal(sanitizeNumber('abc'), 0);
-  assert.equal(sanitizeNumber('70'), 70);
-  assert.equal(sanitizeGrams, sanitizeNumber);
+  assert.equal(sanitizeNumber(NaN), 0);
+  assert.equal(sanitizeNumber(null), 0);
+  assert.equal(sanitizeNumber('150'), 150);
+  assert.equal(sanitizeNumber(150), 150);
 });
 
 test('bmrMifflin matches the Mifflin-St Jeor formula for male and female', () => {
@@ -127,28 +119,63 @@ test('calc sanitizes negative/invalid grams before computing', () => {
   assert.equal(r.calories, 90); // only fat 10g * 9
 });
 
-test('scaleToCalories scales macros proportionally, preserving the split', () => {
-  const scaled = scaleToCalories({ protein_g: 100, carb_g: 100, fat_g: 100 }, 3400);
+test('resolve with no pins scales macros proportionally, preserving the split', () => {
+  const scaled = resolve({ protein_g: 100, carb_g: 100, fat_g: 100 }, NONE, 'calories', 3400);
   assert.deepEqual(scaled, { protein_g: 200, carb_g: 200, fat_g: 200 });
 });
 
-test('scaleToCalories uses an even energy split when current calories are 0', () => {
+test('resolve uses an even energy split when current calories are 0', () => {
   // target 3600 -> 1200 kcal each macro
-  const scaled = scaleToCalories({ protein_g: 0, carb_g: 0, fat_g: 0 }, 3600);
+  const scaled = resolve({ protein_g: 0, carb_g: 0, fat_g: 0 }, NONE, 'calories', 3600);
   assert.ok(approx(calc(scaled).calories, 3600));
   assert.ok(approx(4 * scaled.protein_g, 1200));
   assert.ok(approx(4 * scaled.carb_g, 1200));
   assert.ok(approx(9 * scaled.fat_g, 1200));
 });
 
-test('scaleToCalories with target 0 zeroes all macros', () => {
-  const scaled = scaleToCalories({ protein_g: 50, carb_g: 60, fat_g: 20 }, 0);
+test('resolve with calorie target 0 zeroes all macros', () => {
+  const scaled = resolve({ protein_g: 50, carb_g: 60, fat_g: 20 }, NONE, 'calories', 0);
   assert.deepEqual(scaled, { protein_g: 0, carb_g: 0, fat_g: 0 });
 });
 
-test('scaleToCalories sanitizes an invalid target to 0', () => {
-  const scaled = scaleToCalories({ protein_g: 50, carb_g: 60, fat_g: 20 }, 'abc');
+test('resolve sanitizes an invalid calorie target to 0', () => {
+  const scaled = resolve({ protein_g: 50, carb_g: 60, fat_g: 20 }, NONE, 'calories', 'abc');
   assert.deepEqual(scaled, { protein_g: 0, carb_g: 0, fat_g: 0 });
+});
+
+const METRIC_PROFILE = {
+  sex: 'male', units: 'metric', activity: 'moderate', goal: 'maintain',
+  age: 30, weight: 80, height_cm: 180, height_ft: '', height_in: '',
+  cutKcal: '250', bulkKcal: '250',
+};
+
+test('energyProfile derives BMR, TDEE, target, and weekly change from raw state', () => {
+  const p = energyProfile(METRIC_PROFILE);
+  assert.equal(p.ready, true);
+  assert.equal(p.bmr, 1780); // Mifflin male 80kg/180cm/30y
+  assert.equal(p.tdee, 1780 * ACTIVITY.moderate);
+  assert.equal(p.target, p.tdee); // maintain
+  assert.equal(p.weeklyChange, 0);
+
+  const cut = energyProfile({ ...METRIC_PROFILE, goal: 'cut' });
+  assert.equal(cut.offset, 250);
+  assert.equal(cut.target, cut.tdee - 250);
+  assert.ok(approx(cut.weeklyChange, (-250 * 7) / KCAL_PER_KG));
+});
+
+test('energyProfile converts imperial inputs and reports lb/week', () => {
+  const p = energyProfile({
+    ...METRIC_PROFILE, units: 'imperial', goal: 'bulk',
+    weight: 176.4, height_cm: '', height_ft: 5, height_in: 10.9,
+  });
+  assert.equal(p.ready, true);
+  assert.ok(approx(p.bmr, 1780, 1)); // same body as the metric case
+  assert.ok(approx(p.weeklyChange, (250 * 7) / KCAL_PER_LB));
+});
+
+test('energyProfile is not ready until weight, height, and age are entered', () => {
+  const p = energyProfile({ ...METRIC_PROFILE, age: '', goal: 'cut' });
+  assert.deepEqual(p, { ready: false, offset: 250, bmr: 0, tdee: 0, target: 0, weeklyChange: 0 });
 });
 
 test('constraintCount counts pinned macros plus calories', () => {
