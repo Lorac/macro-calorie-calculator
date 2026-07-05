@@ -117,7 +117,7 @@
     <article class="label">
       <header class="masthead">
         <h1>Macro <span class="swap" aria-hidden="true">⇄</span> Calorie<br />Calculator</h1>
-        <p class="tagline">Drag a slider or type. Lock <span aria-hidden="true">🔒</span> any rows you want held fixed. <a class="masthead-link" href="#info">What is this? &amp; FAQ ↓</a></p>
+        <p class="tagline">Drag a slider or type. Lock any row to hold it fixed. <a class="masthead-link" href="#info">What is this? &amp; FAQ ↓</a></p>
       </header>
 
       <p class="per">Amount per day</p>
@@ -127,12 +127,14 @@
       </div>
 
       <!-- Calories control -->
+      <!-- Inked padlock per lock button; CSS swaps the open/closed shackle from aria-pressed
+           (an SVG <use> sprite can't do this — document CSS doesn't reach its shadow clone). -->
       <div class="row row-calories">
-        <button class="lock" id="calories-lock" type="button" aria-pressed="false" aria-label="Lock calories">🔓</button>
-        <label for="calories" class="row__name">Adjust</label>
+        <button class="lock" id="calories-lock" type="button" aria-pressed="false" aria-label="Lock calories"><svg class="lock__icon" viewBox="0 0 24 24" aria-hidden="true"><rect class="lock__body" x="4.5" y="11" width="15" height="9.5"/><path class="lock__shackle--closed" d="M8 11V7.5a4 4 0 0 1 8 0V11"/><path class="lock__shackle--open" d="M8 11V7.5a4 4 0 0 1 7.7-1.4"/></svg></button>
+        <label for="calories" class="row__name">Calories</label>
         <input type="number" id="calories" min="0" step="1" inputmode="numeric" />
         <span class="unit">kcal</span>
-        <span class="readout">scales unpinned</span>
+        <span class="readout">unlocked macros follow</span>
         <input type="range" id="calories-slider" min="0" max="12000" step="1" aria-label="Total calories slider" />
       </div>
 
@@ -140,7 +142,7 @@
 
       <!-- Protein -->
       <div class="row row--protein">
-        <button class="lock" id="protein-lock" type="button" aria-pressed="false" aria-label="Lock protein">🔓</button>
+        <button class="lock" id="protein-lock" type="button" aria-pressed="false" aria-label="Lock protein"><svg class="lock__icon" viewBox="0 0 24 24" aria-hidden="true"><rect class="lock__body" x="4.5" y="11" width="15" height="9.5"/><path class="lock__shackle--closed" d="M8 11V7.5a4 4 0 0 1 8 0V11"/><path class="lock__shackle--open" d="M8 11V7.5a4 4 0 0 1 7.7-1.4"/></svg></button>
         <label for="protein-grams" class="row__name">Protein</label>
         <input type="number" id="protein-grams" min="0" step="1" inputmode="numeric" />
         <span class="unit">g</span>
@@ -150,7 +152,7 @@
 
       <!-- Carbs -->
       <div class="row row--carb">
-        <button class="lock" id="carb-lock" type="button" aria-pressed="false" aria-label="Lock carbs">🔓</button>
+        <button class="lock" id="carb-lock" type="button" aria-pressed="false" aria-label="Lock carbs"><svg class="lock__icon" viewBox="0 0 24 24" aria-hidden="true"><rect class="lock__body" x="4.5" y="11" width="15" height="9.5"/><path class="lock__shackle--closed" d="M8 11V7.5a4 4 0 0 1 8 0V11"/><path class="lock__shackle--open" d="M8 11V7.5a4 4 0 0 1 7.7-1.4"/></svg></button>
         <label for="carb-grams" class="row__name">Carbs</label>
         <input type="number" id="carb-grams" min="0" step="1" inputmode="numeric" />
         <span class="unit">g</span>
@@ -160,7 +162,7 @@
 
       <!-- Fat -->
       <div class="row row--fat">
-        <button class="lock" id="fat-lock" type="button" aria-pressed="false" aria-label="Lock fat">🔓</button>
+        <button class="lock" id="fat-lock" type="button" aria-pressed="false" aria-label="Lock fat"><svg class="lock__icon" viewBox="0 0 24 24" aria-hidden="true"><rect class="lock__body" x="4.5" y="11" width="15" height="9.5"/><path class="lock__shackle--closed" d="M8 11V7.5a4 4 0 0 1 8 0V11"/><path class="lock__shackle--open" d="M8 11V7.5a4 4 0 0 1 7.7-1.4"/></svg></button>
         <label for="fat-grams" class="row__name">Fat</label>
         <input type="number" id="fat-grams" min="0" step="1" inputmode="numeric" />
         <span class="unit">g</span>

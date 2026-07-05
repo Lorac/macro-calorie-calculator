@@ -2,7 +2,9 @@
 
 export const ENERGY = { protein: 4, carb: 4, fat: 9 }; // kcal per gram
 export const MAX = { protein: 900, carb: 1000, fat: 500, calories: 12_000 }; // slider maxes
-export const DEFAULT_STATE = { protein_g: 150, carb_g: 200, fat_g: 60 };
+// The nutrition label's own reference diet: exactly 2,000 kcal at 30/40/30.
+// Fat is kept fractional (600 kcal / 9) so the total is exact; the UI rounds.
+export const DEFAULT_STATE = { protein_g: 150, carb_g: 200, fat_g: 600 / 9 };
 
 const MACRO_KEYS = ['protein', 'carb', 'fat'];
 

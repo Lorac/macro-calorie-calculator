@@ -96,7 +96,7 @@ test('unit conversions round-trip metric <-> imperial', () => {
 test('energy constants, slider ranges, and default state are correct', () => {
   assert.deepEqual(ENERGY, { protein: 4, carb: 4, fat: 9 });
   assert.deepEqual(MAX, { protein: 900, carb: 1000, fat: 500, calories: 12000 });
-  assert.deepEqual(DEFAULT_STATE, { protein_g: 150, carb_g: 200, fat_g: 60 });
+  assert.deepEqual(DEFAULT_STATE, { protein_g: 150, carb_g: 200, fat_g: 600 / 9 });
 });
 
 test('calc derives calories, per-macro kcal, and percentage split', () => {

@@ -79,8 +79,8 @@ function renderLocks() {
   for (const c of CONTROLS) {
     const pinned = pins[c];
     const btn = el(`${c}-lock`);
-    btn.textContent = pinned ? '🔒' : '🔓';
-    btn.setAttribute('aria-pressed', String(pinned));
+    btn.setAttribute('aria-pressed', String(pinned)); // CSS swaps the padlock's shackle
+
     btn.disabled = !canPin(pins, c); // false only when unpinned & would over-constrain
     el(`${c}-slider`).disabled = pinned;
     inputFor(c).disabled = pinned;

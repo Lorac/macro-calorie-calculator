@@ -63,7 +63,7 @@ const READY_BMR = {
 
 test('default render populates the macro card from DEFAULT_STATE', async () => {
   const { doc } = await load();
-  assert.equal($(doc, 'total-kcal').textContent, '1,940'); // 150*4 + 200*4 + 60*9
+  assert.equal($(doc, 'total-kcal').textContent, '2,000'); // 150*4 + 200*4 + (600/9)*9
   assert.equal($(doc, 'protein-kcal').textContent, '600');
   assert.equal($(doc, 'protein-grams').value, '150');
 });

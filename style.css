@@ -5,7 +5,7 @@
   --protein: #2f53c8; /* riso blue */
   --carb: #e0a51f;    /* riso gold */
   --fat: #d83621;     /* riso vermillion */
-  --accent: #d83621;
+  --go: #407060;      /* riso hunter green — actions only, never data */
 }
 
 * { box-sizing: border-box; }
@@ -65,7 +65,7 @@ h1 {
 .tagline {
   margin: 0.55rem 0 0;
   font-size: 0.8rem;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.35;
 }
 .masthead-link {
@@ -75,7 +75,7 @@ h1 {
   text-underline-offset: 2px;
   white-space: nowrap;
 }
-.masthead-link:hover { color: var(--accent); }
+.masthead-link:hover { text-decoration-thickness: 3px; }
 
 /* ---- "Amount per day" + hero calories ---- */
 .per {
@@ -145,7 +145,7 @@ h1 {
   font-size: 1.02rem;
   letter-spacing: -0.01em;
 }
-.row .unit { grid-area: unit; font-weight: 700; font-size: 0.82rem; }
+.row .unit { grid-area: unit; font-weight: 400; font-size: 0.82rem; }
 .row .readout {
   grid-area: pct;
   text-align: right;
@@ -158,17 +158,15 @@ h1 {
 .readout__kcal {
   display: block;
   margin-top: 0.2rem;
-  font-weight: 500;
+  font-weight: 400;
   font-size: 0.66rem;
   letter-spacing: 0.02em;
-  opacity: 0.65;
 }
 .row-calories .readout {
   font-size: 0.64rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  opacity: 0.7;
 }
 
 /* ---- Lock buttons ---- */
@@ -190,6 +188,19 @@ h1 {
 .lock[aria-pressed="true"] { background: color-mix(in srgb, var(--c, var(--ink)) 38%, var(--paper)); }
 .lock:active { box-shadow: 2px 2px 0 var(--ink); }
 .lock:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.lock__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: block;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.2;
+  stroke-linecap: square;
+}
+.lock[aria-pressed="false"] .lock__shackle--closed,
+.lock[aria-pressed="true"] .lock__shackle--open { display: none; }
+.lock[aria-pressed="true"] .lock__body { fill: var(--ink); }
 
 input:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -330,7 +341,8 @@ input[type="range"]:disabled { cursor: not-allowed; }
   .label { padding: 1.2rem 1.05rem 1.35rem; box-shadow: 6px 6px 0 var(--ink); }
 }
 @media (max-width: 520px), (pointer: coarse) {
-  .lock { width: 44px; height: 44px; font-size: 1.25rem; }
+  .lock { width: 44px; height: 44px; }
+  .lock__icon { width: 1.5rem; height: 1.5rem; }
   input[type="number"] {
     min-height: 44px;
     font-size: 1rem; /* >=16px: prevents iOS zoom-on-focus */
@@ -408,7 +420,7 @@ input[type="range"]:disabled { cursor: not-allowed; }
   width: 100%;
   min-width: 0;
 }
-.field__input .unit { font-weight: 700; font-size: 0.82rem; }
+.field__input .unit { font-weight: 400; font-size: 0.82rem; }
 .field__input--ftin { gap: 0.3rem; }
 
 select#bmr-activity {
@@ -462,11 +474,10 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
   letter-spacing: 0.04em;
 }
 .bmr-stat__name small {
-  font-weight: 500;
+  font-weight: 400;
   font-size: 0.62rem;
   text-transform: none;
   letter-spacing: 0;
-  opacity: 0.65;
 }
 .bmr-stat__value {
   font-size: clamp(1.4rem, 7vw, 1.9rem);
@@ -481,7 +492,7 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
   width: 100%;
   margin-top: 0.75rem;
   padding: 0.8rem;
-  background: var(--accent);
+  background: var(--go);
   color: var(--paper);
   border: 2.5px solid var(--ink);
   border-radius: 0;
@@ -504,11 +515,10 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
 
 /* Protein-target row (a label + input/button row layout) */
 .field__hint {
-  font-weight: 600;
+  font-weight: 400;
   font-size: 0.66rem;
   text-transform: none;
   letter-spacing: 0;
-  opacity: 0.7;
 }
 .exercise-row {
   display: grid;
@@ -587,7 +597,7 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
   border-bottom: 2px solid var(--ink);
 }
 .balance__cell { display: flex; flex-direction: column; gap: 0.15rem; }
-.balance__cell small { font-size: 0.62rem; font-weight: 600; opacity: 0.7; }
+.balance__cell small { font-size: 0.62rem; font-weight: 400; }
 .balance__cell b {
   font-size: 1.15rem;
   font-weight: 900;
@@ -615,7 +625,7 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
 }
-.balance__weight { font-size: 0.8rem; font-weight: 700; opacity: 0.85; }
+.balance__weight { font-size: 0.8rem; font-weight: 700; }
 .balance--deficit { --bal: var(--protein); }
 .balance--surplus { --bal: var(--fat); }
 .balance--deficit .balance__verdict,
@@ -633,7 +643,6 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  opacity: 0.75;
 }
 .trajectory__table {
   width: 100%;
@@ -642,10 +651,9 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
 }
 .trajectory__table th[scope="col"] {
   font-size: 0.62rem;
-  font-weight: 800;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  opacity: 0.5;
   text-align: right;
   padding: 0 0 0.5rem;
 }
@@ -673,11 +681,11 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
 }
 .traj-loss { color: var(--protein); }
 .traj-gain { color: var(--fat); }
-.traj-flat { opacity: 0.5; }
+.traj-flat { font-weight: 400; }
 .trajectory__foot {
   margin: 0.85rem 0 0;
   font-size: 0.68rem;
-  opacity: 0.5;
+  font-style: italic;
   text-align: center;
 }
 
@@ -709,7 +717,7 @@ select#bmr-activity:focus { outline: none; box-shadow: 3px 3px 0 var(--ink); }
 .faq__item:first-child { margin-top: 0; padding-top: 0; border-top: none; }
 .faq dt { font-weight: 800; font-size: 1rem; }
 .faq dd { margin: 0.35rem 0 0; font-size: 0.9rem; line-height: 1.5; }
-.disclaimer { margin: 1.2rem 0 0; font-size: 0.74rem; font-style: italic; opacity: 0.65; }
+.disclaimer { margin: 1.2rem 0 0; font-size: 0.74rem; font-style: italic; }
 
 /* ---- Desktop: both tools on one screen, reference below the fold ----
    The single column is right for phones but wastes a wide screen. Here the two
