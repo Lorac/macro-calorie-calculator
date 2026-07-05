@@ -317,6 +317,20 @@ input[type="range"]:disabled { cursor: not-allowed; }
 .key-carb::before { background: var(--carb); }
 .key-fat::before { background: var(--fat); }
 
+/* Low-fat warning: reuses the riso palette (vermillion danger, gold caution)
+   as a left rule + tint; text stays ink for legibility. */
+.fat-warn {
+  margin: 0.15rem 0 0;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.35;
+  border: 2px solid var(--ink);
+  border-left-width: 6px;
+}
+.fat-warn--danger { border-left-color: var(--fat); background: #f7d9d3; }
+.fat-warn--caution { border-left-color: var(--carb); background: #f6e7c0; }
+
 /* ---- One-shot "printed in" stagger ---- */
 @keyframes ink-in {
   from { opacity: 0; transform: translateY(8px); }

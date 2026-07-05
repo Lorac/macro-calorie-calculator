@@ -1,5 +1,5 @@
 import {
-  calc, resolve, canPin, constraintCount, sanitizeNumber, DEFAULT_STATE, MAX,
+  calc, resolve, canPin, constraintCount, sanitizeNumber, DEFAULT_STATE, MAX, fatAdequacy,
   energyProfile, kgToLb, lbToKg, ftInToCm, cmToFtIn,
   weeklyWeightChange, proteinFromBodyweight,
 } from './calc.js';
@@ -106,8 +106,23 @@ function render() {
   calSlider.style.setProperty('--val', (cappedCal / MAX.calories) * 100);
   el('calories').value = Math.round(calories);
   el('total-kcal').textContent = kcalFmt.format(calories);
+  renderFatWarning(calories, percent.fat);
   renderLocks();
   renderBalanceHook(); // keep the deficit/surplus panel in sync with intake
+}
+
+const FAT_WARN = {
+  'very-low': 'Very low fat — under the 20% healthy minimum. Risks impaired hormone production and poor absorption of fat-soluble vitamins (A, D, E, K).',
+  low: 'Low fat — approaching the 20% healthy minimum. Aim for at least 20–35% of calories from fat.',
+};
+
+function renderFatWarning(calories, fatPercent) {
+  const level = fatAdequacy(calories, fatPercent);
+  const box = el('fat-warn');
+  box.hidden = level === 'none';
+  box.classList.toggle('fat-warn--danger', level === 'very-low');
+  box.classList.toggle('fat-warn--caution', level === 'low');
+  box.textContent = FAT_WARN[level] ?? '';
 }
 
 function changeControl(control, value) {

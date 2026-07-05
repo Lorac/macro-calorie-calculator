@@ -150,6 +150,18 @@ export function calc(state) {
   };
 }
 
+// Flag dangerously low dietary fat. The AMDR floor is 20% of calories: below it
+// risks fat-soluble vitamin (A/D/E/K) malabsorption, essential-fatty-acid
+// shortfall, and impaired sex-hormone synthesis. 20-25% is a soft caution band.
+// Returns 'very-low' (< 20%) | 'low' (< 25%) | 'none'. Silent on an empty plate
+// (0 kcal) so it can't false-alarm before anything is entered.
+export function fatAdequacy(calories, fatPercent) {
+  if (sanitizeNumber(calories) <= 0) return 'none';
+  if (fatPercent < 20) return 'very-low';
+  if (fatPercent < 25) return 'low';
+  return 'none';
+}
+
 function gk(m) {
   return `${m}_g`;
 }

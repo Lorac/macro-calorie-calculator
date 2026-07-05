@@ -22,7 +22,17 @@ import {
   proteinFromBodyweight,
   KCAL_PER_KG,
   KCAL_PER_LB,
+  fatAdequacy,
 } from '../calc.js';
+
+test('fatAdequacy flags low dietary fat against the 20/25% thresholds', () => {
+  assert.equal(fatAdequacy(2000, 30), 'none');     // default plate is healthy
+  assert.equal(fatAdequacy(2000, 25), 'none');     // 25% is the top of caution
+  assert.equal(fatAdequacy(2000, 24), 'low');      // caution band
+  assert.equal(fatAdequacy(2000, 20), 'low');      // 20% is still caution
+  assert.equal(fatAdequacy(2000, 19), 'very-low'); // below AMDR floor
+  assert.equal(fatAdequacy(0, 0), 'none');         // empty plate never warns
+});
 
 test('sanitizeNumber coerces invalid input to 0 and passes valid numbers', () => {
   assert.equal(sanitizeNumber(-5), 0);
