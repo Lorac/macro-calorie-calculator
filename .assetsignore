@@ -5,3 +5,7 @@ package.json
 pnpm-lock.yaml
 README.md
 wrangler.jsonc
+.git/
+.wrangler/
+.serena/
+.claude/

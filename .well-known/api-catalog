@@ -1,0 +1,14 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://macros.fyi/",
+      "service-doc": [
+        {
+          "href": "https://macros.fyi/llms.txt",
+          "type": "text/plain",
+          "title": "Macro ⇄ Calorie Calculator — service documentation"
+        }
+      ]
+    }
+  ]
+}
