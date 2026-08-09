@@ -1,6 +1,6 @@
 # Macro ⇄ Calorie Calculator
 
-> A free, no-signup, ad-free macro (macronutrient) calculator at https://macros.roussinb.dev/. Convert between grams of protein, carbohydrate, and fat and total daily calories, see your macro percentage split update live, and lock any values to solve for the rest. Runs entirely in the browser — nothing is sent to a server, and there is no tracking.
+> A free, no-signup, ad-free macro (macronutrient) calculator at https://macros.fyi/. Convert between grams of protein, carbohydrate, and fat and total daily calories, see your macro percentage split update live, and lock any values to solve for the rest. Runs entirely in the browser — nothing is sent to a server, and there is no tracking.
 
 ## How it works
 - Calorie conversion factors: protein and carbohydrate are ~4 kcal per gram; fat is ~9 kcal per gram.
@@ -13,5 +13,5 @@
 - Open source.
 
 ## Links
-- [Macro Calculator](https://macros.roussinb.dev/): the live tool
+- [Macro Calculator](https://macros.fyi/): the live tool
 - [Source code](https://github.com/Lorac/macro-calorie-calculator): open-source repository

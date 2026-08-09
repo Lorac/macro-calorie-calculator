@@ -36,5 +36,7 @@ The app is plain static files at the repo root, so Pages can serve it directly.
    repo, branch `main`. Build command: empty. Deploy command: `npx wrangler deploy`.
    `wrangler.jsonc` serves the repo root as static assets; `.assetsignore` keeps
    the non-site files out.
-3. Project → Custom domains → `macros.roussinb.dev` (Cloudflare updates the DNS
-   record itself, since the zone is already here).
+3. Register `macros.fyi` and add it to Cloudflare as a zone (point the
+   registrar's nameservers at the ones Cloudflare assigns).
+4. Project → Custom domains → `macros.fyi`. It is an apex domain, so Cloudflare
+   creates the proxied root record itself once the zone is active.

@@ -30,4 +30,4 @@ Allow: /
 User-agent: Applebot-Extended
 Allow: /
 
-Sitemap: https://macros.roussinb.dev/sitemap.xml
+Sitemap: https://macros.fyi/sitemap.xml
