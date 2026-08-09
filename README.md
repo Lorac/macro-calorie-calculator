@@ -27,10 +27,14 @@ use `happy-dom` (dev-only), so install once first:
     pnpm install
     pnpm test   # node --test on test/calc.test.js + test/ui.test.js
 
-## Deploy (GitHub Pages)
+## Deploy (Cloudflare Pages)
 
 The app is plain static files at the repo root, so Pages can serve it directly.
 
 1. Push to GitHub.
-2. Repo → Settings → Pages → Source: "Deploy from a branch", branch `main`, folder `/ (root)`.
-3. The site goes live at `https://<user>.github.io/<repo>/`.
+2. Cloudflare dashboard → Workers & Pages → Create → Connect to Git, pick this
+   repo, branch `main`. Build command: empty. Deploy command: `npx wrangler deploy`.
+   `wrangler.jsonc` serves the repo root as static assets; `.assetsignore` keeps
+   the non-site files out.
+3. Project → Custom domains → `macros.roussinb.dev` (Cloudflare updates the DNS
+   record itself, since the zone is already here).

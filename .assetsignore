@@ -1,0 +1,7 @@
+node_modules/
+test/
+docs/
+package.json
+pnpm-lock.yaml
+README.md
+wrangler.jsonc

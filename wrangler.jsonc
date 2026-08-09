@@ -1,0 +1,6 @@
+{
+  // Static-assets-only Worker: no server code, the whole repo root is the site.
+  "name": "macro-calorie-calculator",
+  "compatibility_date": "2026-08-08",
+  "assets": { "directory": "." }
+}
