@@ -28,6 +28,12 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
 
+  <!-- app.js imports these; without the hint the browser only discovers them
+       after app.js has downloaded and parsed, costing a round trip. -->
+  <link rel="modulepreload" href="app.js" />
+  <link rel="modulepreload" href="calc.js" />
+  <link rel="modulepreload" href="hall.js" />
+
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",

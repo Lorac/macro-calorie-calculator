@@ -1,2 +1,9 @@
 /.well-known/api-catalog
   Content-Type: application/linkset+json
+
+# Filenames are unversioned, so nothing can be cached immutably. Short freshness
+# plus stale-while-revalidate mirrors what sw.js already does: serve instantly,
+# refresh in the background. Default was max-age=0, must-revalidate, which cost
+# a round trip per asset on every visit.
+/*
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400

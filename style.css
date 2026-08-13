@@ -332,9 +332,13 @@ input[type="range"]:disabled { cursor: not-allowed; }
 .fat-warn--caution { border-left-color: var(--carb); background: #f6e7c0; }
 
 /* ---- One-shot "printed in" stagger ---- */
+/* Slides only, no fade: an element that first paints at opacity 0 is
+   disqualified as an LCP candidate, and since every candidate above the fold
+   carries this animation, fading in meant the page reported no LCP at all
+   (Lighthouse aborts the run with NO_LCP). transform doesn't disqualify. */
 @keyframes ink-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
+  from { transform: translateY(8px); }
+  to { transform: none; }
 }
 .masthead, .per, .hero, .col-head, .row, .split {
   animation: ink-in 0.45s both;
